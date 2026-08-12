@@ -1,24 +1,58 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useMemo, useState } from "react";
+import { InvitationRenderer } from "@/components/invitation/InvitationRenderer";
+import { getPublicInvitation } from "@/lib/invitation.functions";
+import { emptyConfig, type InvitationConfig } from "@/lib/builder/types";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Undangan Pernikahan Kami" },
+      { name: "description", content: "Dengan penuh sukacita kami mengundang Anda untuk hadir di hari bahagia kami." },
+      { property: "og:title", content: "Undangan Pernikahan Kami" },
+      { property: "og:description", content: "Dengan penuh sukacita kami mengundang Anda untuk hadir di hari bahagia kami." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: PublicInvitation,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function PublicInvitation() {
+  const load = useServerFn(getPublicInvitation);
+  const [config, setConfig] = useState<InvitationConfig | null>(null);
+  const [guest, setGuest] = useState<{ name: string; category: string; greeting: string | null } | null>(null);
+  const token = useMemo(() => {
+    if (typeof window === "undefined") return undefined;
+    return new URLSearchParams(window.location.search).get("guest") ?? undefined;
+  }, []);
+
+  useEffect(() => {
+    load({ data: token ? { token } : {} })
+      .then((res) => {
+        setConfig((res.config as InvitationConfig | null) ?? emptyConfig());
+        setGuest(res.guest ?? null);
+      })
+      .catch(() => setConfig(emptyConfig()));
+  }, [load, token]);
+
+  if (!config) return <div style={{ minHeight: "100vh", background: "#fbf8f4" }} />;
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
+    <main>
+      <h1 className="sr-only">{config.title ?? "Undangan Pernikahan"}</h1>
+      <InvitationRenderer
+        config={config}
+        ctx={{
+          editor: false,
+          breakpoint: "desktop",
+          ...(guest?.name ? { guestName: guest.name } : {}),
+          ...(guest?.category ? { guestCategory: guest.category } : {}),
+          ...(guest?.greeting ? { guestGreeting: guest.greeting } : {}),
+          ...(token ? { token } : {}),
+        }}
       />
-    </div>
+    </main>
   );
 }
