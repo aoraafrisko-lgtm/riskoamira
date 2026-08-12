@@ -30,7 +30,8 @@ function PublicInvitation() {
 
   useEffect(() => {
     load({ data: token ? { token } : {} })
-      .then((res) => {
+      .then((raw) => {
+        const res = raw as { config: unknown; guest?: { name: string; category: string; greeting: string | null } | null };
         setConfig((res.config as InvitationConfig | null) ?? emptyConfig());
         setGuest(res.guest ?? null);
       })
