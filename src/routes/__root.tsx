@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Undangan Pernikahan Kami" },
+      { name: "description", content: "Dengan penuh sukacita kami mengundang Anda untuk hadir di hari bahagia kami." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Undangan Pernikahan Kami" },
+      { property: "og:description", content: "Dengan penuh sukacita kami mengundang Anda untuk hadir di hari bahagia kami." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Undangan Pernikahan Kami" },
+      { name: "twitter:description", content: "Dengan penuh sukacita kami mengundang Anda untuk hadir di hari bahagia kami." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3d96987277cbf79d9d9d641ab071d9e3/id-preview-bac65ff1--dce8dc80-49fe-4dc3-a1f2-5b8b7af1e19b.lovable.app-1786539537250.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3d96987277cbf79d9d9d641ab071d9e3/id-preview-bac65ff1--dce8dc80-49fe-4dc3-a1f2-5b8b7af1e19b.lovable.app-1786539537250.png" },
     ],
     links: [
       {
