@@ -874,7 +874,7 @@ function FieldInput({ label, value, onChange }: { label: string; value: string; 
   );
 }
 
-function NumRow({ label, value, onChange, step = 1 }: { label: string; value?: number; onChange: (v: number) => void; step?: number }) {
+function NumRow({ label, value, onChange, step = 1 }: { label: string; value: number | undefined; onChange: (v: number) => void; step?: number | undefined }) {
   return (
     <div className="flex items-center justify-between gap-2">
       <Label className="text-xs">{label}</Label>
