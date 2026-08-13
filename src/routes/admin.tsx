@@ -458,10 +458,50 @@ function Toolbar({
     }
   };
 
+  const fieldNode = sel.kind === "field" ? T.findField(config, sel.sectionId, sel.subsectionId, sel.fieldId) : null;
+
+  const patchField = (patch: Record<string, unknown>) =>
+    commit((c) => T.updateField(c, sel.sectionId, sel.subsectionId!, sel.fieldId!, patch as never));
+
+  const toggleFree = () => {
+    if (!fieldNode) return;
+    patchField(
+      fieldNode.free
+        ? { free: false }
+        : { free: true, pos: { x: 10, y: 20, w: 60, ...(fieldNode.pos ?? {}) } },
+    );
+  };
+
+  const layer = (dir: -1 | 1) => {
+    if (!fieldNode) return;
+    const z = (fieldNode.pos?.z ?? fieldNode.style?.zIndex ?? 1) + dir;
+    patchField({ pos: { ...(fieldNode.pos ?? {}), z } });
+  };
+
+  const nudge = (dx: number, dy: number) => {
+    if (!fieldNode) return;
+    const p = { x: 0, y: 0, w: 40, ...(fieldNode.pos ?? {}) };
+    patchField({ pos: { ...p, x: Math.round((p.x + dx) * 10) / 10, y: p.y + dy } });
+  };
+
   return (
     <div className="flex overflow-hidden rounded-md bg-primary shadow">
-      {btn("↑", () => move(-1))}
-      {btn("↓", () => move(1))}
+      {fieldNode?.free ? (
+        <>
+          {btn("◀", () => nudge(-1, 0))}
+          {btn("▶", () => nudge(1, 0))}
+          {btn("▲", () => nudge(0, -6))}
+          {btn("▼", () => nudge(0, 6))}
+          {btn("z+", () => layer(1))}
+          {btn("z-", () => layer(-1))}
+        </>
+      ) : (
+        <>
+          {btn("↑", () => move(-1))}
+          {btn("↓", () => move(1))}
+        </>
+      )}
+      {fieldNode ? btn(fieldNode.free ? "🔒 Rapikan" : "✥ Bebas", toggleFree) : null}
       {btn("Duplicate", duplicate)}
       {btn(node.hidden ? "Show" : "Hide", toggleHide)}
       {btn("Delete", remove)}
