@@ -175,6 +175,7 @@ function SubsectionView({
   theme: InvitationConfig["theme"];
   ctxBp: RenderCtx["breakpoint"];
 }) {
+  const flowRef = useRef<HTMLDivElement | null>(null);
   if (sub.hidden && !editor) return null;
   const sel: Selection = { kind: "subsection", sectionId: section.id, subsectionId: sub.id };
   const selected = isSelected(hooks?.selection, sel);
@@ -182,6 +183,14 @@ function SubsectionView({
   const free = layout === "free";
   const columns =
     ctxBp === "mobile" ? 1 : layout === "grid-3" ? 3 : layout === "grid-2" || layout === "row" ? 2 : 1;
+
+  // Field dengan flag `free` boleh keluar dari alur & digerakkan ke mana pun
+  const flowFields = free ? [] : sub.fields.filter((f) => !f.free);
+  const floatFields = free ? [] : sub.fields.filter((f) => f.free);
+  const floatMinHeight = floatFields.reduce((max, f) => {
+    const p = resolvePos(f, ctxBp);
+    return Math.max(max, (p.y ?? 0) + 90);
+  }, 0);
 
   return (
     <div
@@ -206,17 +215,31 @@ function SubsectionView({
       {free ? (
         <FreeCanvas section={section} sub={sub} editor={editor} hooks={hooks} bp={ctxBp} />
       ) : (
-        <div
-          style={{
-            display: columns > 1 ? "grid" : "flex",
-            gridTemplateColumns: columns > 1 ? `repeat(${columns}, minmax(0,1fr))` : undefined,
-            flexDirection: "column",
-            gap: 14,
-            alignItems: columns > 1 ? "center" : undefined,
-          }}
-        >
-          {sub.fields.map((field) => (
-            <FieldWrap key={field.id} section={section} sub={sub} field={field} editor={editor} hooks={hooks} />
+        <div ref={flowRef} style={{ position: "relative", minHeight: floatMinHeight || undefined }}>
+          <div
+            style={{
+              display: columns > 1 ? "grid" : "flex",
+              gridTemplateColumns: columns > 1 ? `repeat(${columns}, minmax(0,1fr))` : undefined,
+              flexDirection: "column",
+              gap: 14,
+              alignItems: columns > 1 ? "center" : undefined,
+            }}
+          >
+            {flowFields.map((field) => (
+              <FieldWrap key={field.id} section={section} sub={sub} field={field} editor={editor} hooks={hooks} />
+            ))}
+          </div>
+          {floatFields.map((field) => (
+            <FreeField
+              key={field.id}
+              section={section}
+              sub={sub}
+              field={field}
+              editor={editor}
+              hooks={hooks}
+              bp={ctxBp}
+              canvasRef={flowRef}
+            />
           ))}
         </div>
       )}
