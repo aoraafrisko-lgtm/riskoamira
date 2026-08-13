@@ -9,6 +9,14 @@ export const mergeStyle = (base: StyleConfig, override?: StyleConfig): StyleConf
 export const resolveStyle = (node: FieldNode, bp: Breakpoint): StyleConfig =>
   mergeStyle(node.style, node.responsive?.[bp]);
 
+export const resolvePos = (node: FieldNode, bp: Breakpoint) => ({
+  x: 0,
+  y: 0,
+  w: 40,
+  ...(node.pos ?? {}),
+  ...(node.posResponsive?.[bp] ?? {}),
+});
+
 const shadowMap: Record<string, string> = {
   none: "none",
   sm: "0 1px 2px rgba(0,0,0,.08)",
