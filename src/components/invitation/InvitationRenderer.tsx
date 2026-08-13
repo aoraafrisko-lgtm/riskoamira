@@ -1,9 +1,17 @@
-import { Fragment } from "react";
+import { Fragment, useRef } from "react";
 import { FieldRenderer } from "./FieldRenderer";
 import { RenderContext, type RenderCtx } from "./render-context";
 import { getDefinition } from "@/lib/builder/registry";
-import { styleToCss } from "@/lib/builder/style";
-import type { FieldNode, InvitationConfig, SectionNode, Selection, SubsectionNode } from "@/lib/builder/types";
+import { resolvePos, styleToCss } from "@/lib/builder/style";
+import type {
+  Breakpoint,
+  FieldNode,
+  FreePos,
+  InvitationConfig,
+  SectionNode,
+  Selection,
+  SubsectionNode,
+} from "@/lib/builder/types";
 
 export interface EditorHooks {
   selection?: Selection | null;
