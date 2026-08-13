@@ -761,6 +761,17 @@ function SettingsPanel({
 
   const style = node.style ?? {};
 
+  const posBase: FreePos = { x: 0, y: 0, w: 40, ...(field?.pos ?? {}) };
+  const posEff: FreePos = { ...posBase, ...(field?.posResponsive?.[breakpoint] ?? {}) };
+  const patchPos = (patch: FreePos) => {
+    if (!field) return;
+    const p =
+      breakpoint === "desktop"
+        ? { pos: { ...posBase, ...patch } }
+        : { posResponsive: { ...(field.posResponsive ?? {}), [breakpoint]: { ...(field.posResponsive?.[breakpoint] ?? {}), ...patch } } };
+    commit((c) => T.updateField(c, selection.sectionId, selection.subsectionId!, selection.fieldId!, p));
+  };
+
   return (
     <div className="p-3">
       <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
