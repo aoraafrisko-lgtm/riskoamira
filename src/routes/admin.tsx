@@ -827,6 +827,17 @@ function SettingsPanel({
         </TabsContent>
 
         <TabsContent value="design" className="space-y-3 pt-3">
+          {selection.kind === "field" && sub?.layout === "free" && (
+            <div className="rounded-md border p-2">
+              <div className="mb-2 text-[11px] font-semibold uppercase text-muted-foreground">
+                Posisi bebas — {breakpoint}
+              </div>
+              <NumRow label="X (%)" value={posEff.x} onChange={(v) => patchPos({ x: v })} />
+              <NumRow label="Y (px)" value={posEff.y} onChange={(v) => patchPos({ y: v })} />
+              <NumRow label="Lebar (%)" value={posEff.w} onChange={(v) => patchPos({ w: v })} />
+              <NumRow label="Layer (z)" value={posEff.z} onChange={(v) => patchPos({ z: v })} />
+            </div>
+          )}
           <ColorRow label="Background" value={style.bgColor ?? "#ffffff"} onChange={(v) => patchStyle({ bgColor: v })} />
           <ColorRow label="Warna Teks" value={style.textColor ?? "#000000"} onChange={(v) => patchStyle({ textColor: v })} />
           <FieldInput label="Background Image URL" value={style.bgImage ?? ""} onChange={(v) => patchStyle({ bgImage: v })} />
