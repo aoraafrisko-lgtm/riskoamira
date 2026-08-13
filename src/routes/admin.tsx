@@ -872,15 +872,42 @@ function SettingsPanel({
         </TabsContent>
 
         <TabsContent value="design" className="space-y-3 pt-3">
-          {selection.kind === "field" && sub?.layout === "free" && (
+          {selection.kind === "field" && field && (
             <div className="rounded-md border p-2">
-              <div className="mb-2 text-[11px] font-semibold uppercase text-muted-foreground">
-                Posisi bebas — {breakpoint}
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <span className="text-[11px] font-semibold uppercase text-muted-foreground">
+                  Posisi bebas — {breakpoint}
+                </span>
+                {sub?.layout !== "free" && (
+                  <Switch
+                    checked={!!field.free}
+                    onCheckedChange={(v) =>
+                      commit((c) =>
+                        T.updateField(c, selection.sectionId, selection.subsectionId!, selection.fieldId!, {
+                          free: v,
+                          ...(v ? { pos: { x: 10, y: 20, w: 60, ...(field.pos ?? {}) } } : {}),
+                        } as never),
+                      )
+                    }
+                  />
+                )}
               </div>
-              <NumRow label="X (%)" value={posEff.x} onChange={(v) => patchPos({ x: v })} />
-              <NumRow label="Y (px)" value={posEff.y} onChange={(v) => patchPos({ y: v })} />
-              <NumRow label="Lebar (%)" value={posEff.w} onChange={(v) => patchPos({ w: v })} />
-              <NumRow label="Layer (z)" value={posEff.z} onChange={(v) => patchPos({ z: v })} />
+              {field.free || sub?.layout === "free" ? (
+                <>
+                  <NumRow label="X (%)" value={posEff.x} onChange={(v) => patchPos({ x: v })} />
+                  <NumRow label="Y (px)" value={posEff.y} onChange={(v) => patchPos({ y: v })} />
+                  <NumRow label="Lebar (%)" value={posEff.w} onChange={(v) => patchPos({ w: v })} />
+                  <NumRow label="Layer (z)" value={posEff.z} onChange={(v) => patchPos({ z: v })} />
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Drag field di preview ke mana pun (boleh menimpa teks lain). Tombol panah = geser halus,
+                    Shift+drag = snap, titik emas = ubah lebar.
+                  </p>
+                </>
+              ) : (
+                <p className="text-[11px] text-muted-foreground">
+                  Aktifkan untuk melepas field dari alur, lalu drag bebas ke kanan/bawah/menimpa elemen lain.
+                </p>
+              )}
             </div>
           )}
           <ColorRow label="Background" value={style.bgColor ?? "#ffffff"} onChange={(v) => patchStyle({ bgColor: v })} />
