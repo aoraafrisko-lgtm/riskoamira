@@ -12,6 +12,7 @@ export interface EditorHooks {
   onAddField?: (sectionId: string, subId: string) => void;
   onAddSection?: () => void;
   onInlineEdit?: (sel: Selection, key: string, value: string) => void;
+  onMovePos?: (sel: Selection, pos: FreePos) => void;
   toolbar?: (sel: Selection) => React.ReactNode;
 }
 
