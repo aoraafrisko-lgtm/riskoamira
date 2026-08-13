@@ -23,7 +23,7 @@ import {
 import { SECTION_PRESETS, SUBSECTION_PRESETS, createSection, createSubsection } from "@/lib/builder/presets";
 import * as T from "@/lib/builder/tree";
 import { emptyConfig, uid } from "@/lib/builder/types";
-import type { Breakpoint, InvitationConfig, Photo, Selection, StyleConfig } from "@/lib/builder/types";
+import type { Breakpoint, FreePos, InvitationConfig, Photo, Selection, StyleConfig } from "@/lib/builder/types";
 import {
   getDraftConfig,
   publishInvitation,
@@ -225,6 +225,16 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
         }),
       );
     },
+    onMovePos: (sel: Selection, pos: FreePos) => {
+      if (!sel.fieldId || !sel.subsectionId) return;
+      const f = T.findField(config, sel.sectionId, sel.subsectionId, sel.fieldId);
+      if (!f) return;
+      const patch =
+        breakpoint === "desktop"
+          ? { pos: { ...(f.pos ?? {}), ...pos } }
+          : { posResponsive: { ...(f.posResponsive ?? {}), [breakpoint]: { ...(f.posResponsive?.[breakpoint] ?? {}), ...pos } } };
+      commit((c) => T.updateField(c, sel.sectionId, sel.subsectionId!, sel.fieldId!, patch));
+    },
     toolbar: (sel: Selection) => <Toolbar sel={sel} config={config} commit={commit} setSelection={setSelection} />,
   };
 
@@ -356,6 +366,11 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
         onPick={(type) => {
           const target = fieldPicker!;
           const field = createField(type);
+          const targetSub = T.findSubsection(config, target.sectionId, target.subId);
+          if (targetSub?.layout === "free") {
+            const n = targetSub.fields.length;
+            field.pos = { x: 8 + (n % 3) * 6, y: 24 + n * 28, w: 50 };
+          }
           commit((c) => T.insertField(c, target.sectionId, target.subId, field));
           setSelection({ kind: "field", sectionId: target.sectionId, subsectionId: target.subId, fieldId: field.id });
           setFieldPicker(null);
@@ -751,6 +766,17 @@ function SettingsPanel({
 
   const style = node.style ?? {};
 
+  const posBase: FreePos = { x: 0, y: 0, w: 40, ...(field?.pos ?? {}) };
+  const posEff: FreePos = { ...posBase, ...(field?.posResponsive?.[breakpoint] ?? {}) };
+  const patchPos = (patch: FreePos) => {
+    if (!field) return;
+    const p =
+      breakpoint === "desktop"
+        ? { pos: { ...posBase, ...patch } }
+        : { posResponsive: { ...(field.posResponsive ?? {}), [breakpoint]: { ...(field.posResponsive?.[breakpoint] ?? {}), ...patch } } };
+    commit((c) => T.updateField(c, selection.sectionId, selection.subsectionId!, selection.fieldId!, p));
+  };
+
   return (
     <div className="p-3">
       <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -777,12 +803,27 @@ function SettingsPanel({
             />
           )}
           {selection.kind === "subsection" && (
-            <SelectRow
-              label="Layout"
-              value={sub?.layout ?? "stack"}
-              options={["stack", "row", "grid-2", "grid-3"]}
-              onChange={(v) => commit((c) => T.updateSubsection(c, selection.sectionId, selection.subsectionId!, { layout: v as never }))}
-            />
+            <>
+              <SelectRow
+                label="Layout"
+                value={sub?.layout ?? "stack"}
+                options={["stack", "row", "grid-2", "grid-3", "free"]}
+                onChange={(v) => commit((c) => T.updateSubsection(c, selection.sectionId, selection.subsectionId!, { layout: v as never }))}
+              />
+              {sub?.layout === "free" && (
+                <>
+                  <NumRow
+                    label="Tinggi Canvas (px)"
+                    value={sub.canvasHeight ?? 420}
+                    step={20}
+                    onChange={(v) => commit((c) => T.updateSubsection(c, selection.sectionId, selection.subsectionId!, { canvasHeight: v }))}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Mode bebas: drag field ke mana saja di canvas, tarik titik emas untuk mengubah lebar.
+                  </p>
+                </>
+              )}
+            </>
           )}
           {field &&
             (def?.controls ?? []).map((ctl) => (
@@ -791,6 +832,17 @@ function SettingsPanel({
         </TabsContent>
 
         <TabsContent value="design" className="space-y-3 pt-3">
+          {selection.kind === "field" && sub?.layout === "free" && (
+            <div className="rounded-md border p-2">
+              <div className="mb-2 text-[11px] font-semibold uppercase text-muted-foreground">
+                Posisi bebas — {breakpoint}
+              </div>
+              <NumRow label="X (%)" value={posEff.x} onChange={(v) => patchPos({ x: v })} />
+              <NumRow label="Y (px)" value={posEff.y} onChange={(v) => patchPos({ y: v })} />
+              <NumRow label="Lebar (%)" value={posEff.w} onChange={(v) => patchPos({ w: v })} />
+              <NumRow label="Layer (z)" value={posEff.z} onChange={(v) => patchPos({ z: v })} />
+            </div>
+          )}
           <ColorRow label="Background" value={style.bgColor ?? "#ffffff"} onChange={(v) => patchStyle({ bgColor: v })} />
           <ColorRow label="Warna Teks" value={style.textColor ?? "#000000"} onChange={(v) => patchStyle({ textColor: v })} />
           <FieldInput label="Background Image URL" value={style.bgImage ?? ""} onChange={(v) => patchStyle({ bgImage: v })} />

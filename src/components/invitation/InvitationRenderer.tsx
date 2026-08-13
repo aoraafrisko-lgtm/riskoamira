@@ -1,9 +1,17 @@
-import { Fragment } from "react";
+import { Fragment, useRef } from "react";
 import { FieldRenderer } from "./FieldRenderer";
 import { RenderContext, type RenderCtx } from "./render-context";
 import { getDefinition } from "@/lib/builder/registry";
-import { styleToCss } from "@/lib/builder/style";
-import type { FieldNode, InvitationConfig, SectionNode, Selection, SubsectionNode } from "@/lib/builder/types";
+import { resolvePos, styleToCss } from "@/lib/builder/style";
+import type {
+  Breakpoint,
+  FieldNode,
+  FreePos,
+  InvitationConfig,
+  SectionNode,
+  Selection,
+  SubsectionNode,
+} from "@/lib/builder/types";
 
 export interface EditorHooks {
   selection?: Selection | null;
@@ -12,6 +20,7 @@ export interface EditorHooks {
   onAddField?: (sectionId: string, subId: string) => void;
   onAddSection?: () => void;
   onInlineEdit?: (sel: Selection, key: string, value: string) => void;
+  onMovePos?: (sel: Selection, pos: FreePos) => void;
   toolbar?: (sel: Selection) => React.ReactNode;
 }
 
@@ -170,6 +179,7 @@ function SubsectionView({
   const sel: Selection = { kind: "subsection", sectionId: section.id, subsectionId: sub.id };
   const selected = isSelected(hooks?.selection, sel);
   const layout = sub.layout ?? "stack";
+  const free = layout === "free";
   const columns =
     ctxBp === "mobile" ? 1 : layout === "grid-3" ? 3 : layout === "grid-2" || layout === "row" ? 2 : 1;
 
@@ -193,19 +203,23 @@ function SubsectionView({
       }}
     >
       {editor && selected ? <Badge label={sub.name} toolbar={hooks?.toolbar?.(sel)} /> : null}
-      <div
-        style={{
-          display: columns > 1 ? "grid" : "flex",
-          gridTemplateColumns: columns > 1 ? `repeat(${columns}, minmax(0,1fr))` : undefined,
-          flexDirection: "column",
-          gap: 14,
-          alignItems: columns > 1 ? "center" : undefined,
-        }}
-      >
-        {sub.fields.map((field) => (
-          <FieldWrap key={field.id} section={section} sub={sub} field={field} editor={editor} hooks={hooks} />
-        ))}
-      </div>
+      {free ? (
+        <FreeCanvas section={section} sub={sub} editor={editor} hooks={hooks} bp={ctxBp} />
+      ) : (
+        <div
+          style={{
+            display: columns > 1 ? "grid" : "flex",
+            gridTemplateColumns: columns > 1 ? `repeat(${columns}, minmax(0,1fr))` : undefined,
+            flexDirection: "column",
+            gap: 14,
+            alignItems: columns > 1 ? "center" : undefined,
+          }}
+        >
+          {sub.fields.map((field) => (
+            <FieldWrap key={field.id} section={section} sub={sub} field={field} editor={editor} hooks={hooks} />
+          ))}
+        </div>
+      )}
       {editor && sub.fields.length === 0 && (
         <button
           type="button"
@@ -230,6 +244,160 @@ function SubsectionView({
           ＋ Field
         </button>
       )}
+    </div>
+  );
+}
+
+/* ---------- Free (drag anywhere) canvas ---------- */
+
+function FreeCanvas({
+  section,
+  sub,
+  editor,
+  hooks,
+  bp,
+}: {
+  section: SectionNode;
+  sub: SubsectionNode;
+  editor: boolean;
+  hooks: EditorHooks | undefined;
+  bp: Breakpoint;
+}) {
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const height = sub.canvasHeight ?? 420;
+
+  return (
+    <div
+      ref={canvasRef}
+      style={{
+        position: "relative",
+        height,
+        backgroundImage: editor
+          ? "linear-gradient(to right, rgba(176,141,87,.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(176,141,87,.12) 1px, transparent 1px)"
+          : undefined,
+        backgroundSize: "20px 20px",
+      }}
+    >
+      {sub.fields.map((field) => (
+        <FreeField
+          key={field.id}
+          section={section}
+          sub={sub}
+          field={field}
+          editor={editor}
+          hooks={hooks}
+          bp={bp}
+          canvasRef={canvasRef}
+        />
+      ))}
+    </div>
+  );
+}
+
+function FreeField({
+  section,
+  sub,
+  field,
+  editor,
+  hooks,
+  bp,
+  canvasRef,
+}: {
+  section: SectionNode;
+  sub: SubsectionNode;
+  field: FieldNode;
+  editor: boolean;
+  hooks: EditorHooks | undefined;
+  bp: Breakpoint;
+  canvasRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  if (field.hidden && !editor) return null;
+  const sel: Selection = { kind: "field", sectionId: section.id, subsectionId: sub.id, fieldId: field.id };
+  const selected = isSelected(hooks?.selection, sel);
+  const pos = resolvePos(field, bp);
+  const def = getDefinition(field.type);
+
+  const startDrag = (e: React.PointerEvent, mode: "move" | "resize") => {
+    if (!editor) return;
+    e.preventDefault();
+    e.stopPropagation();
+    hooks?.onSelect?.(sel);
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const base = { ...pos };
+    const onMove = (ev: PointerEvent) => {
+      const dxPct = ((ev.clientX - startX) / rect.width) * 100;
+      const dy = ev.clientY - startY;
+      const next: FreePos =
+        mode === "move"
+          ? {
+              ...base,
+              x: Math.max(-10, Math.min(100, Math.round((base.x + dxPct) * 10) / 10)),
+              y: Math.max(-40, Math.round(base.y + dy)),
+            }
+          : { ...base, w: Math.max(5, Math.min(100, Math.round(base.w + dxPct))) };
+      hooks?.onMovePos?.(sel, next);
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
+
+  const wrapper: React.CSSProperties = {
+    position: "absolute",
+    left: `${pos.x}%`,
+    top: pos.y,
+    width: `${pos.w}%`,
+    zIndex: pos.z ?? field.style?.zIndex ?? 1,
+    opacity: field.hidden ? 0.4 : 1,
+  };
+
+  if (!editor)
+    return (
+      <div style={wrapper}>
+        <FieldRenderer field={field} />
+      </div>
+    );
+
+  return (
+    <div
+      style={{
+        ...wrapper,
+        outline: selected ? "2px solid #b08d57" : "1px dashed rgba(176,141,87,.45)",
+        outlineOffset: 2,
+        cursor: "move",
+        touchAction: "none",
+      }}
+      onPointerDown={(e) => startDrag(e, "move")}
+      onClick={(e) => {
+        e.stopPropagation();
+        hooks?.onSelect?.(sel);
+      }}
+    >
+      {selected ? <Badge label={def?.name ?? field.type} toolbar={hooks?.toolbar?.(sel)} /> : null}
+      <FieldRenderer field={field} />
+      {selected ? (
+        <div
+          onPointerDown={(e) => startDrag(e, "resize")}
+          style={{
+            position: "absolute",
+            right: -6,
+            bottom: -6,
+            width: 12,
+            height: 12,
+            borderRadius: 3,
+            background: "#b08d57",
+            cursor: "ew-resize",
+            touchAction: "none",
+            zIndex: 32,
+          }}
+        />
+      ) : null}
     </div>
   );
 }
