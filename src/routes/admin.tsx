@@ -458,10 +458,50 @@ function Toolbar({
     }
   };
 
+  const fieldNode = sel.kind === "field" ? T.findField(config, sel.sectionId, sel.subsectionId, sel.fieldId) : null;
+
+  const patchField = (patch: Record<string, unknown>) =>
+    commit((c) => T.updateField(c, sel.sectionId, sel.subsectionId!, sel.fieldId!, patch as never));
+
+  const toggleFree = () => {
+    if (!fieldNode) return;
+    patchField(
+      fieldNode.free
+        ? { free: false }
+        : { free: true, pos: { x: 10, y: 20, w: 60, ...(fieldNode.pos ?? {}) } },
+    );
+  };
+
+  const layer = (dir: -1 | 1) => {
+    if (!fieldNode) return;
+    const z = (fieldNode.pos?.z ?? fieldNode.style?.zIndex ?? 1) + dir;
+    patchField({ pos: { ...(fieldNode.pos ?? {}), z } });
+  };
+
+  const nudge = (dx: number, dy: number) => {
+    if (!fieldNode) return;
+    const p = { x: 0, y: 0, w: 40, ...(fieldNode.pos ?? {}) };
+    patchField({ pos: { ...p, x: Math.round((p.x + dx) * 10) / 10, y: p.y + dy } });
+  };
+
   return (
     <div className="flex overflow-hidden rounded-md bg-primary shadow">
-      {btn("↑", () => move(-1))}
-      {btn("↓", () => move(1))}
+      {fieldNode?.free ? (
+        <>
+          {btn("◀", () => nudge(-1, 0))}
+          {btn("▶", () => nudge(1, 0))}
+          {btn("▲", () => nudge(0, -6))}
+          {btn("▼", () => nudge(0, 6))}
+          {btn("z+", () => layer(1))}
+          {btn("z-", () => layer(-1))}
+        </>
+      ) : (
+        <>
+          {btn("↑", () => move(-1))}
+          {btn("↓", () => move(1))}
+        </>
+      )}
+      {fieldNode ? btn(fieldNode.free ? "🔒 Rapikan" : "✥ Bebas", toggleFree) : null}
       {btn("Duplicate", duplicate)}
       {btn(node.hidden ? "Show" : "Hide", toggleHide)}
       {btn("Delete", remove)}
@@ -832,15 +872,42 @@ function SettingsPanel({
         </TabsContent>
 
         <TabsContent value="design" className="space-y-3 pt-3">
-          {selection.kind === "field" && sub?.layout === "free" && (
+          {selection.kind === "field" && field && (
             <div className="rounded-md border p-2">
-              <div className="mb-2 text-[11px] font-semibold uppercase text-muted-foreground">
-                Posisi bebas — {breakpoint}
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <span className="text-[11px] font-semibold uppercase text-muted-foreground">
+                  Posisi bebas — {breakpoint}
+                </span>
+                {sub?.layout !== "free" && (
+                  <Switch
+                    checked={!!field.free}
+                    onCheckedChange={(v) =>
+                      commit((c) =>
+                        T.updateField(c, selection.sectionId, selection.subsectionId!, selection.fieldId!, {
+                          free: v,
+                          ...(v ? { pos: { x: 10, y: 20, w: 60, ...(field.pos ?? {}) } } : {}),
+                        } as never),
+                      )
+                    }
+                  />
+                )}
               </div>
-              <NumRow label="X (%)" value={posEff.x} onChange={(v) => patchPos({ x: v })} />
-              <NumRow label="Y (px)" value={posEff.y} onChange={(v) => patchPos({ y: v })} />
-              <NumRow label="Lebar (%)" value={posEff.w} onChange={(v) => patchPos({ w: v })} />
-              <NumRow label="Layer (z)" value={posEff.z} onChange={(v) => patchPos({ z: v })} />
+              {field.free || sub?.layout === "free" ? (
+                <>
+                  <NumRow label="X (%)" value={posEff.x} onChange={(v) => patchPos({ x: v })} />
+                  <NumRow label="Y (px)" value={posEff.y} onChange={(v) => patchPos({ y: v })} />
+                  <NumRow label="Lebar (%)" value={posEff.w} onChange={(v) => patchPos({ w: v })} />
+                  <NumRow label="Layer (z)" value={posEff.z} onChange={(v) => patchPos({ z: v })} />
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Drag field di preview ke mana pun (boleh menimpa teks lain). Tombol panah = geser halus,
+                    Shift+drag = snap, titik emas = ubah lebar.
+                  </p>
+                </>
+              ) : (
+                <p className="text-[11px] text-muted-foreground">
+                  Aktifkan untuk melepas field dari alur, lalu drag bebas ke kanan/bawah/menimpa elemen lain.
+                </p>
+              )}
             </div>
           )}
           <ColorRow label="Background" value={style.bgColor ?? "#ffffff"} onChange={(v) => patchStyle({ bgColor: v })} />

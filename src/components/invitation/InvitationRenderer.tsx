@@ -1,4 +1,4 @@
-import { Fragment, useRef } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { FieldRenderer } from "./FieldRenderer";
 import { RenderContext, type RenderCtx } from "./render-context";
 import { getDefinition } from "@/lib/builder/registry";
@@ -175,6 +175,7 @@ function SubsectionView({
   theme: InvitationConfig["theme"];
   ctxBp: RenderCtx["breakpoint"];
 }) {
+  const flowRef = useRef<HTMLDivElement | null>(null);
   if (sub.hidden && !editor) return null;
   const sel: Selection = { kind: "subsection", sectionId: section.id, subsectionId: sub.id };
   const selected = isSelected(hooks?.selection, sel);
@@ -182,6 +183,14 @@ function SubsectionView({
   const free = layout === "free";
   const columns =
     ctxBp === "mobile" ? 1 : layout === "grid-3" ? 3 : layout === "grid-2" || layout === "row" ? 2 : 1;
+
+  // Field dengan flag `free` boleh keluar dari alur & digerakkan ke mana pun
+  const flowFields = free ? [] : sub.fields.filter((f) => !f.free);
+  const floatFields = free ? [] : sub.fields.filter((f) => f.free);
+  const floatMinHeight = floatFields.reduce((max, f) => {
+    const p = resolvePos(f, ctxBp);
+    return Math.max(max, (p.y ?? 0) + 90);
+  }, 0);
 
   return (
     <div
@@ -206,17 +215,31 @@ function SubsectionView({
       {free ? (
         <FreeCanvas section={section} sub={sub} editor={editor} hooks={hooks} bp={ctxBp} />
       ) : (
-        <div
-          style={{
-            display: columns > 1 ? "grid" : "flex",
-            gridTemplateColumns: columns > 1 ? `repeat(${columns}, minmax(0,1fr))` : undefined,
-            flexDirection: "column",
-            gap: 14,
-            alignItems: columns > 1 ? "center" : undefined,
-          }}
-        >
-          {sub.fields.map((field) => (
-            <FieldWrap key={field.id} section={section} sub={sub} field={field} editor={editor} hooks={hooks} />
+        <div ref={flowRef} style={{ position: "relative", minHeight: floatMinHeight || undefined }}>
+          <div
+            style={{
+              display: columns > 1 ? "grid" : "flex",
+              gridTemplateColumns: columns > 1 ? `repeat(${columns}, minmax(0,1fr))` : undefined,
+              flexDirection: "column",
+              gap: 14,
+              alignItems: columns > 1 ? "center" : undefined,
+            }}
+          >
+            {flowFields.map((field) => (
+              <FieldWrap key={field.id} section={section} sub={sub} field={field} editor={editor} hooks={hooks} />
+            ))}
+          </div>
+          {floatFields.map((field) => (
+            <FreeField
+              key={field.id}
+              section={section}
+              sub={sub}
+              field={field}
+              editor={editor}
+              hooks={hooks}
+              bp={ctxBp}
+              canvasRef={flowRef}
+            />
           ))}
         </div>
       )}
@@ -311,11 +334,38 @@ function FreeField({
   bp: Breakpoint;
   canvasRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  if (field.hidden && !editor) return null;
   const sel: Selection = { kind: "field", sectionId: section.id, subsectionId: sub.id, fieldId: field.id };
   const selected = isSelected(hooks?.selection, sel);
   const pos = resolvePos(field, bp);
   const def = getDefinition(field.type);
+  const [dragging, setDragging] = useState(false);
+
+  // Nudge dengan tombol panah saat field terpilih (Shift = 10x lebih cepat)
+  useEffect(() => {
+    if (!editor || !selected) return;
+    const onKey = (e: KeyboardEvent) => {
+      const keys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+      if (!keys.includes(e.key)) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(t.tagName))) return;
+      e.preventDefault();
+      const stepPct = e.shiftKey ? 2 : 0.5;
+      const stepPx = e.shiftKey ? 10 : 2;
+      const next: FreePos =
+        e.key === "ArrowLeft"
+          ? { ...pos, x: Math.round((pos.x - stepPct) * 10) / 10 }
+          : e.key === "ArrowRight"
+            ? { ...pos, x: Math.round((pos.x + stepPct) * 10) / 10 }
+            : e.key === "ArrowUp"
+              ? { ...pos, y: pos.y - stepPx }
+              : { ...pos, y: pos.y + stepPx };
+      hooks?.onMovePos?.(sel, next);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
+  if (field.hidden && !editor) return null;
 
   const startDrag = (e: React.PointerEvent, mode: "move" | "resize") => {
     if (!editor) return;
@@ -327,20 +377,23 @@ function FreeField({
     const startX = e.clientX;
     const startY = e.clientY;
     const base = { ...pos };
+    setDragging(true);
     const onMove = (ev: PointerEvent) => {
       const dxPct = ((ev.clientX - startX) / rect.width) * 100;
       const dy = ev.clientY - startY;
+      const snap = ev.shiftKey;
       const next: FreePos =
         mode === "move"
           ? {
               ...base,
-              x: Math.max(-10, Math.min(100, Math.round((base.x + dxPct) * 10) / 10)),
-              y: Math.max(-40, Math.round(base.y + dy)),
+              x: Math.max(-60, Math.min(160, snap ? Math.round((base.x + dxPct) / 5) * 5 : Math.round((base.x + dxPct) * 10) / 10)),
+              y: snap ? Math.round((base.y + dy) / 10) * 10 : Math.round(base.y + dy),
             }
-          : { ...base, w: Math.max(5, Math.min(100, Math.round(base.w + dxPct))) };
+          : { ...base, w: Math.max(5, Math.min(200, Math.round(base.w + dxPct))) };
       hooks?.onMovePos?.(sel, next);
     };
     const onUp = () => {
+      setDragging(false);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
     };
@@ -368,10 +421,13 @@ function FreeField({
     <div
       style={{
         ...wrapper,
+        zIndex: (typeof wrapper.zIndex === "number" ? wrapper.zIndex : 1) + (selected ? 20 : 0),
         outline: selected ? "2px solid #b08d57" : "1px dashed rgba(176,141,87,.45)",
         outlineOffset: 2,
-        cursor: "move",
+        boxShadow: dragging ? "0 10px 30px rgba(0,0,0,.18)" : undefined,
+        cursor: dragging ? "grabbing" : "grab",
         touchAction: "none",
+        userSelect: "none",
       }}
       onPointerDown={(e) => startDrag(e, "move")}
       onClick={(e) => {
@@ -379,8 +435,27 @@ function FreeField({
         hooks?.onSelect?.(sel);
       }}
     >
-      {selected ? <Badge label={def?.name ?? field.type} toolbar={hooks?.toolbar?.(sel)} /> : null}
+      {selected ? <Badge label={`✥ ${def?.name ?? field.type}`} toolbar={hooks?.toolbar?.(sel)} /> : null}
       <FieldRenderer field={field} />
+      {dragging ? (
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            bottom: -22,
+            zIndex: 40,
+            background: "#3b332c",
+            color: "#fff",
+            fontSize: 10,
+            padding: "2px 6px",
+            borderRadius: 5,
+            fontFamily: "system-ui, sans-serif",
+            whiteSpace: "nowrap",
+          }}
+        >
+          x {pos.x}% · y {pos.y}px · w {pos.w}%
+        </div>
+      ) : null}
       {selected ? (
         <div
           onPointerDown={(e) => startDrag(e, "resize")}
