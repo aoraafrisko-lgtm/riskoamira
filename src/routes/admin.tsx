@@ -787,12 +787,27 @@ function SettingsPanel({
             />
           )}
           {selection.kind === "subsection" && (
-            <SelectRow
-              label="Layout"
-              value={sub?.layout ?? "stack"}
-              options={["stack", "row", "grid-2", "grid-3"]}
-              onChange={(v) => commit((c) => T.updateSubsection(c, selection.sectionId, selection.subsectionId!, { layout: v as never }))}
-            />
+            <>
+              <SelectRow
+                label="Layout"
+                value={sub?.layout ?? "stack"}
+                options={["stack", "row", "grid-2", "grid-3", "free"]}
+                onChange={(v) => commit((c) => T.updateSubsection(c, selection.sectionId, selection.subsectionId!, { layout: v as never }))}
+              />
+              {sub?.layout === "free" && (
+                <>
+                  <NumRow
+                    label="Tinggi Canvas (px)"
+                    value={sub.canvasHeight ?? 420}
+                    step={20}
+                    onChange={(v) => commit((c) => T.updateSubsection(c, selection.sectionId, selection.subsectionId!, { canvasHeight: v }))}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Mode bebas: drag field ke mana saja di canvas, tarik titik emas untuk mengubah lebar.
+                  </p>
+                </>
+              )}
+            </>
           )}
           {field &&
             (def?.controls ?? []).map((ctl) => (
