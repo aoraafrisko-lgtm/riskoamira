@@ -170,6 +170,7 @@ function SubsectionView({
   const sel: Selection = { kind: "subsection", sectionId: section.id, subsectionId: sub.id };
   const selected = isSelected(hooks?.selection, sel);
   const layout = sub.layout ?? "stack";
+  const free = layout === "free";
   const columns =
     ctxBp === "mobile" ? 1 : layout === "grid-3" ? 3 : layout === "grid-2" || layout === "row" ? 2 : 1;
 
