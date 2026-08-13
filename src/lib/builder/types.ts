@@ -42,7 +42,9 @@ export interface Photo {
   caption?: string;
 }
 
-export type ContentValue = string | number | boolean | Photo[] | Record<string, unknown> | undefined;
+export type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
+
+export type ContentValue = string | number | boolean | Photo[] | { [key: string]: Json } | undefined;
 
 /** Free-position placement (percent of canvas width / px offset from top). */
 export interface FreePos {
