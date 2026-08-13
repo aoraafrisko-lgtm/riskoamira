@@ -194,19 +194,23 @@ function SubsectionView({
       }}
     >
       {editor && selected ? <Badge label={sub.name} toolbar={hooks?.toolbar?.(sel)} /> : null}
-      <div
-        style={{
-          display: columns > 1 ? "grid" : "flex",
-          gridTemplateColumns: columns > 1 ? `repeat(${columns}, minmax(0,1fr))` : undefined,
-          flexDirection: "column",
-          gap: 14,
-          alignItems: columns > 1 ? "center" : undefined,
-        }}
-      >
-        {sub.fields.map((field) => (
-          <FieldWrap key={field.id} section={section} sub={sub} field={field} editor={editor} hooks={hooks} />
-        ))}
-      </div>
+      {free ? (
+        <FreeCanvas section={section} sub={sub} editor={editor} hooks={hooks} bp={ctxBp} />
+      ) : (
+        <div
+          style={{
+            display: columns > 1 ? "grid" : "flex",
+            gridTemplateColumns: columns > 1 ? `repeat(${columns}, minmax(0,1fr))` : undefined,
+            flexDirection: "column",
+            gap: 14,
+            alignItems: columns > 1 ? "center" : undefined,
+          }}
+        >
+          {sub.fields.map((field) => (
+            <FieldWrap key={field.id} section={section} sub={sub} field={field} editor={editor} hooks={hooks} />
+          ))}
+        </div>
+      )}
       {editor && sub.fields.length === 0 && (
         <button
           type="button"
