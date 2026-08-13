@@ -56,6 +56,8 @@ export interface FieldNode {
   id: string;
   type: string;
   hidden?: boolean;
+  /** true = field lepas dari alur (bisa digerakkan bebas ke mana pun, boleh menimpa field lain) */
+  free?: boolean;
   content: Record<string, ContentValue>;
   style: StyleConfig;
   behavior: Record<string, ContentValue>;
