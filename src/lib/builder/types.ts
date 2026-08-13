@@ -44,6 +44,14 @@ export interface Photo {
 
 export type ContentValue = string | number | boolean | Photo[] | Record<string, unknown> | undefined;
 
+/** Free-position placement (percent of canvas width / px offset from top). */
+export interface FreePos {
+  x?: number; // % of canvas width (left)
+  y?: number; // px from canvas top
+  w?: number; // % of canvas width
+  z?: number;
+}
+
 export interface FieldNode {
   id: string;
   type: string;
@@ -53,6 +61,8 @@ export interface FieldNode {
   behavior: Record<string, ContentValue>;
   animation: AnimationConfig;
   responsive: Partial<Record<Breakpoint, StyleConfig>>;
+  pos?: FreePos;
+  posResponsive?: Partial<Record<Breakpoint, FreePos>>;
 }
 
 export interface SubsectionNode {
@@ -60,7 +70,8 @@ export interface SubsectionNode {
   name: string;
   preset: string;
   hidden?: boolean;
-  layout?: "stack" | "row" | "grid-2" | "grid-3";
+  layout?: "stack" | "row" | "grid-2" | "grid-3" | "free";
+  canvasHeight?: number;
   style: StyleConfig;
   animation: AnimationConfig;
   fields: FieldNode[];
