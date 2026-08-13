@@ -366,6 +366,11 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
         onPick={(type) => {
           const target = fieldPicker!;
           const field = createField(type);
+          const targetSub = T.findSubsection(config, target.sectionId, target.subId);
+          if (targetSub?.layout === "free") {
+            const n = targetSub.fields.length;
+            field.pos = { x: 8 + (n % 3) * 6, y: 24 + n * 28, w: 50 };
+          }
           commit((c) => T.insertField(c, target.sectionId, target.subId, field));
           setSelection({ kind: "field", sectionId: target.sectionId, subsectionId: target.subId, fieldId: field.id });
           setFieldPicker(null);
