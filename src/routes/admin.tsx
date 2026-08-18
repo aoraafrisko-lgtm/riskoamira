@@ -238,38 +238,69 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
     toolbar: (sel: Selection) => <Toolbar sel={sel} config={config} commit={commit} setSelection={setSelection} />,
   };
 
+  const structureTree = (
+    <StructurePanel
+      config={config}
+      selection={selection}
+      setSelection={setSelection}
+      commit={commit}
+      onAddSection={() => setSectionPicker(true)}
+      onAddSubsection={(id) => setSubPicker(id)}
+      onAddField={(s, sub) => setFieldPicker({ sectionId: s, subId: sub })}
+    />
+  );
+  const settingsPanel = (
+    <SettingsPanel config={config} selection={selection} commit={commit} breakpoint={breakpoint} code={code} />
+  );
+
   if (fullscreen) {
     return (
-      <div className="fixed inset-0 z-50 overflow-auto bg-background">
-        <Button className="fixed right-4 top-4 z-50" size="sm" onClick={() => setFullscreen(false)}>
-          Tutup Preview
+      <div className="fixed inset-0 z-50 overflow-auto bg-muted/40">
+        <Button className="fixed right-3 top-3 z-50" size="sm" onClick={() => setFullscreen(false)}>
+          Tutup
         </Button>
-        <InvitationRenderer config={config} ctx={{ editor: false, breakpoint: "desktop" }} />
+        <div
+          className="mx-auto min-h-full overflow-hidden bg-background shadow-lg sm:my-4 sm:rounded-[28px] sm:border"
+          style={{ maxWidth: width }}
+        >
+          <InvitationRenderer config={config} ctx={{ editor: false, breakpoint }} />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col bg-muted/30">
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b bg-card px-4 py-2.5 sm:flex sm:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="truncate text-sm font-semibold">Wedding Invitation Builder</span>
+    <div className="flex h-[100dvh] flex-col bg-muted/30">
+      <header className="flex shrink-0 items-center gap-2 border-b bg-card px-3 py-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <span className="truncate text-sm font-semibold">Wedding Builder</span>
           <span className="hidden text-xs text-muted-foreground sm:inline">
-            {saveState === "saved" ? "✓ Tersimpan" : saveState === "saving" ? "Menyimpan..." : "Perubahan belum tersimpan"}
+            {saveState === "saved" ? "✓ Tersimpan" : saveState === "saving" ? "Menyimpan..." : "Belum tersimpan"}
+          </span>
+          <span className="text-xs text-muted-foreground sm:hidden">
+            {saveState === "saved" ? "✓" : saveState === "saving" ? "…" : "•"}
           </span>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-          <Button size="sm" variant="ghost" onClick={undo} disabled={!past.length}>Undo</Button>
-          <Button size="sm" variant="ghost" onClick={redo} disabled={!future.length}>Redo</Button>
-          {(["desktop", "tablet", "mobile"] as Breakpoint[]).map((bp) => (
-            <Button key={bp} size="sm" variant={breakpoint === bp ? "secondary" : "ghost"} onClick={() => setBreakpoint(bp)}>
-              {bp === "desktop" ? "Desktop" : bp === "tablet" ? "Tablet" : "Mobile"}
-            </Button>
-          ))}
-          <Button size="sm" variant="outline" onClick={() => setFullscreen(true)}>Preview</Button>
-          <Button size="sm" variant="outline" onClick={() => doSave(config)}>Save</Button>
+        <div className="flex shrink-0 items-center gap-1">
+          <div className="flex rounded-md border p-0.5">
+            {(["mobile", "tablet", "desktop"] as Breakpoint[]).map((bp) => (
+              <button
+                key={bp}
+                type="button"
+                onClick={() => setBreakpoint(bp)}
+                aria-label={bp}
+                className={`h-7 w-8 rounded text-sm ${breakpoint === bp ? "bg-secondary" : "text-muted-foreground"}`}
+              >
+                {bp === "mobile" ? "▯" : bp === "tablet" ? "▭" : "🖥"}
+              </button>
+            ))}
+          </div>
+          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={undo} disabled={!past.length} aria-label="Undo">↶</Button>
+          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={redo} disabled={!future.length} aria-label="Redo">↷</Button>
+          <Button size="sm" variant="outline" className="h-8 px-2" onClick={() => setFullscreen(true)}>Preview</Button>
           <Button
             size="sm"
+            className="h-8 px-2"
             onClick={() =>
               publish({ data: { code, config } })
                 .then(() => toast.success("Undangan dipublikasikan"))
@@ -278,33 +309,24 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
           >
             Publish
           </Button>
-          <Button size="sm" variant="ghost" onClick={onLogout}>Keluar</Button>
+          <Button size="sm" variant="ghost" className="hidden h-8 px-2 sm:inline-flex" onClick={() => doSave(config)}>Save</Button>
+          <Button size="sm" variant="ghost" className="hidden h-8 px-2 sm:inline-flex" onClick={onLogout}>Keluar</Button>
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        {/* STRUCTURE */}
-        <aside className="w-full shrink-0 border-b bg-card lg:w-72 lg:border-b-0 lg:border-r">
+      <div className="flex min-h-0 flex-1 lg:flex-row">
+        {/* STRUCTURE — desktop only */}
+        <aside className="hidden w-72 shrink-0 border-r bg-card lg:block">
           <Tabs value={panel} onValueChange={(v) => setPanel(v as "editor" | "guests")}>
             <TabsList className="m-2 grid w-[calc(100%-1rem)] grid-cols-2">
               <TabsTrigger value="editor">Struktur</TabsTrigger>
               <TabsTrigger value="guests">Tamu</TabsTrigger>
             </TabsList>
             <TabsContent value="editor" className="m-0">
-              <ScrollArea className="h-[240px] lg:h-[calc(100vh-8.5rem)]">
-                <StructurePanel
-                  config={config}
-                  selection={selection}
-                  setSelection={setSelection}
-                  commit={commit}
-                  onAddSection={() => setSectionPicker(true)}
-                  onAddSubsection={(id) => setSubPicker(id)}
-                  onAddField={(s, sub) => setFieldPicker({ sectionId: s, subId: sub })}
-                />
-              </ScrollArea>
+              <ScrollArea className="h-[calc(100dvh-8.5rem)]">{structureTree}</ScrollArea>
             </TabsContent>
             <TabsContent value="guests" className="m-0">
-              <ScrollArea className="h-[300px] lg:h-[calc(100vh-8.5rem)]">
+              <ScrollArea className="h-[calc(100dvh-8.5rem)]">
                 <GuestsPanel code={code} />
               </ScrollArea>
             </TabsContent>
@@ -312,9 +334,11 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
         </aside>
 
         {/* PREVIEW */}
-        <main className="min-h-0 flex-1 overflow-auto bg-muted/50 p-4">
+        <main className="min-h-0 flex-1 overflow-auto bg-muted/50 p-2 pb-20 sm:p-4 lg:pb-4">
           <div
-            className="mx-auto overflow-hidden rounded-xl border bg-background shadow-sm transition-all"
+            className={`mx-auto overflow-hidden border bg-background shadow-sm transition-all ${
+              breakpoint === "mobile" ? "rounded-[26px]" : "rounded-xl"
+            }`}
             style={{ maxWidth: width }}
           >
             <InvitationRenderer
@@ -325,13 +349,33 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
           </div>
         </main>
 
-        {/* SETTINGS */}
-        <aside className="w-full shrink-0 border-t bg-card lg:w-80 lg:border-l lg:border-t-0">
-          <ScrollArea className="h-[320px] lg:h-[calc(100vh-3.5rem)]">
-            <SettingsPanel config={config} selection={selection} commit={commit} breakpoint={breakpoint} code={code} />
-          </ScrollArea>
+        {/* SETTINGS — desktop only */}
+        <aside className="hidden w-80 shrink-0 border-l bg-card lg:block">
+          <ScrollArea className="h-[calc(100dvh-3.5rem)]">{settingsPanel}</ScrollArea>
         </aside>
       </div>
+
+      {/* MOBILE BOTTOM BAR + SHEETS */}
+      <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 gap-1 border-t bg-card/95 p-1.5 backdrop-blur lg:hidden">
+        <Button size="sm" variant="outline" className="h-10 text-xs" onClick={() => setSheet("structure")}>Struktur</Button>
+        <Button size="sm" variant={selection ? "default" : "outline"} className="h-10 text-xs" onClick={() => setSheet("settings")}>Setting</Button>
+        <Button size="sm" variant="outline" className="h-10 text-xs" onClick={() => setSheet("guests")}>Tamu</Button>
+        <Button size="sm" variant="outline" className="h-10 text-xs" onClick={() => doSave(config)}>Save</Button>
+      </div>
+
+      <Sheet open={sheet !== null} onOpenChange={(o) => !o && setSheet(null)}>
+        <SheetContent side="bottom" className="h-[78dvh] p-0 lg:hidden">
+          <SheetHeader className="border-b px-4 py-3">
+            <SheetTitle className="text-base">
+              {sheet === "structure" ? "Struktur" : sheet === "settings" ? "Pengaturan" : "Tamu & RSVP"}
+            </SheetTitle>
+          </SheetHeader>
+          <ScrollArea className="h-[calc(78dvh-3.5rem)]">
+            {sheet === "structure" ? structureTree : sheet === "settings" ? settingsPanel : sheet === "guests" ? <GuestsPanel code={code} /> : null}
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
+
 
       {/* PICKERS */}
       <PresetDialog
