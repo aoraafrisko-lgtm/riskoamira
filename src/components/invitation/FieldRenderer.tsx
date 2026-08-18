@@ -3,7 +3,7 @@ import QRCode from "qrcode";
 import { useServerFn } from "@tanstack/react-start";
 import { getDefinition } from "@/lib/builder/registry";
 import type { FieldNode, Photo } from "@/lib/builder/types";
-import { animationCss, resolveStyle, styleToCss } from "@/lib/builder/style";
+import { animationCss, resolveStyle, scaleStyle, styleToCss } from "@/lib/builder/style";
 import { useReveal } from "@/lib/builder/use-reveal";
 import { useRenderCtx } from "./render-context";
 import { submitRsvp, listWishes } from "@/lib/invitation.functions";
@@ -390,7 +390,7 @@ function Wishes({ title }: { title: string }) {
 export function FieldRenderer({ field }: { field: FieldNode }) {
   const ctx = useRenderCtx();
   const def = getDefinition(field.type);
-  const style = useMemo(() => resolveStyle(field, ctx.breakpoint), [field, ctx.breakpoint]);
+  const style = useMemo(() => scaleStyle(resolveStyle(field, ctx.breakpoint), ctx.breakpoint), [field, ctx.breakpoint]);
   const { ref, visible } = useReveal<HTMLDivElement>(field.animation?.trigger === "scroll");
   const c = field.content;
   const b = field.behavior;

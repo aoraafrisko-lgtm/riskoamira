@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { FieldRenderer } from "./FieldRenderer";
 import { RenderContext, type RenderCtx } from "./render-context";
 import { getDefinition } from "@/lib/builder/registry";
-import { resolvePos, styleToCss } from "@/lib/builder/style";
+import { resolvePos, scaleStyle, styleToCss } from "@/lib/builder/style";
 import type {
   Breakpoint,
   FieldNode,
@@ -118,7 +118,7 @@ function SectionView({
       }
       style={{
         position: "relative",
-        ...styleToCss(s),
+        ...styleToCss(scaleStyle(s, ctxBp)),
         backgroundImage: s.bgImage ? `url(${s.bgImage})` : s.bgGradient,
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -131,7 +131,7 @@ function SectionView({
       {s.bgImage && s.overlay ? (
         <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${s.overlay / 100})` }} />
       ) : null}
-      <div style={{ position: "relative", maxWidth: 820, margin: "0 auto" }}>
+      <div style={{ position: "relative", maxWidth: ctxBp === "mobile" ? "100%" : 820, margin: "0 auto" }}>
         {editor && selected ? <Badge label={section.name} toolbar={hooks?.toolbar?.(sel)} /> : null}
         {section.subsections.map((sub) => (
           <SubsectionView
@@ -205,7 +205,7 @@ function SubsectionView({
       }
       style={{
         position: "relative",
-        ...styleToCss(sub.style ?? {}),
+        ...styleToCss(scaleStyle(sub.style ?? {}, ctxBp)),
         opacity: sub.hidden ? 0.4 : (sub.style?.opacity ?? 1),
         outline: selected ? "2px dashed #b08d57" : undefined,
         outlineOffset: -2,
@@ -221,7 +221,7 @@ function SubsectionView({
               display: columns > 1 ? "grid" : "flex",
               gridTemplateColumns: columns > 1 ? `repeat(${columns}, minmax(0,1fr))` : undefined,
               flexDirection: "column",
-              gap: 14,
+              gap: ctxBp === "mobile" ? 12 : 14,
               alignItems: columns > 1 ? "center" : undefined,
             }}
           >
@@ -461,11 +461,12 @@ function FreeField({
           onPointerDown={(e) => startDrag(e, "resize")}
           style={{
             position: "absolute",
-            right: -6,
-            bottom: -6,
-            width: 12,
-            height: 12,
-            borderRadius: 3,
+            right: -9,
+            bottom: -9,
+            width: 18,
+            height: 18,
+            borderRadius: 5,
+            border: "2px solid #fff",
             background: "#b08d57",
             cursor: "ew-resize",
             touchAction: "none",
