@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   FIELD_CATEGORIES,
   FIELD_REGISTRY,
@@ -107,7 +108,7 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
   const [past, setPast] = useState<InvitationConfig[]>([]);
   const [future, setFuture] = useState<InvitationConfig[]>([]);
   const [selection, setSelection] = useState<Selection | null>(null);
-  const [breakpoint, setBreakpoint] = useState<Breakpoint>("desktop");
+  const [breakpoint, setBreakpoint] = useState<Breakpoint>("mobile");
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [loaded, setLoaded] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
@@ -115,6 +116,7 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
   const [subPicker, setSubPicker] = useState<string | null>(null);
   const [fieldPicker, setFieldPicker] = useState<{ sectionId: string; subId: string } | null>(null);
   const [panel, setPanel] = useState<"editor" | "guests">("editor");
+  const [sheet, setSheet] = useState<"structure" | "settings" | "guests" | null>(null);
 
   const load = useServerFn(getDraftConfig);
   const save = useServerFn(saveDraftConfig);
@@ -207,7 +209,7 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
     return () => window.removeEventListener("keydown", h);
   }, [undo, redo, doSave, config]);
 
-  const width = breakpoint === "mobile" ? 400 : breakpoint === "tablet" ? 768 : 1024;
+  const width = breakpoint === "mobile" ? 390 : breakpoint === "tablet" ? 768 : 1024;
 
   const hooks = {
     selection,
