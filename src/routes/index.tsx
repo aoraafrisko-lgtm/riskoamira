@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { InvitationRenderer } from "@/components/invitation/InvitationRenderer";
+import { useViewportBreakpoint } from "@/hooks/use-viewport-breakpoint";
 import { getPublicInvitation } from "@/lib/invitation.functions";
 import { emptyConfig, type InvitationConfig } from "@/lib/builder/types";
 
