@@ -275,7 +275,7 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
     <div className="flex h-[100dvh] flex-col bg-muted/30">
       <header className="flex shrink-0 items-center gap-2 border-b bg-card px-3 py-2">
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <span className="truncate text-sm font-semibold">Wedding Builder</span>
+          <span className="hidden truncate text-sm font-semibold sm:inline">Wedding Builder</span>
           <span className="hidden text-xs text-muted-foreground sm:inline">
             {saveState === "saved" ? "✓ Tersimpan" : saveState === "saving" ? "Menyimpan..." : "Belum tersimpan"}
           </span>
