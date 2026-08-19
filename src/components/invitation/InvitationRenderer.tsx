@@ -119,11 +119,16 @@ function SectionView({
       style={{
         position: "relative",
         ...styleToCss(scaleStyle(s, ctxBp)),
+        width: CANVAS_WIDTH,
+        height: CANVAS_HEIGHT,
+        minHeight: CANVAS_HEIGHT,
+        maxHeight: CANVAS_HEIGHT,
+        overflow: editor ? "visible" : "hidden",
         backgroundImage: s.bgImage ? `url(${s.bgImage})` : s.bgGradient,
         backgroundSize: "cover",
         backgroundPosition: "center",
         opacity: section.hidden ? 0.4 : (s.opacity ?? 1),
-        outline: selected ? "2px solid #b08d57" : undefined,
+        outline: selected ? "2px solid #b08d57" : editor ? "1px dashed rgba(176,141,87,.5)" : undefined,
         outlineOffset: -2,
         cursor: editor ? "pointer" : undefined,
       }}
@@ -131,7 +136,7 @@ function SectionView({
       {s.bgImage && s.overlay ? (
         <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${s.overlay / 100})` }} />
       ) : null}
-      <div style={{ position: "relative", maxWidth: ctxBp === "mobile" ? "100%" : 820, margin: "0 auto" }}>
+      <div style={{ position: "relative", width: "100%", margin: "0 auto" }}>
         {editor && selected ? <Badge label={section.name} toolbar={hooks?.toolbar?.(sel)} /> : null}
         {section.subsections.map((sub) => (
           <SubsectionView
