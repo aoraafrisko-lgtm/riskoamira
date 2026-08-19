@@ -379,15 +379,18 @@ function FreeField({
     e.preventDefault();
     e.stopPropagation();
     hooks?.onSelect?.(sel);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    const el = canvasRef.current;
+    const rect = el?.getBoundingClientRect();
+    if (!el || !rect) return;
+    // kanvas diskalakan (transform), jadi px layar harus dibagi skala
+    const zoom = el.offsetWidth ? rect.width / el.offsetWidth : 1;
     const startX = e.clientX;
     const startY = e.clientY;
     const base = { ...pos };
     setDragging(true);
     const onMove = (ev: PointerEvent) => {
       const dxPct = ((ev.clientX - startX) / rect.width) * 100;
-      const dy = ev.clientY - startY;
+      const dy = (ev.clientY - startY) / (zoom || 1);
       const snap = ev.shiftKey;
       const next: FreePos =
         mode === "move"
