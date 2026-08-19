@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { FieldRenderer } from "./FieldRenderer";
 import { RenderContext, type RenderCtx } from "./render-context";
 import { getDefinition } from "@/lib/builder/registry";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/lib/builder/canvas";
 import { resolvePos, scaleStyle, styleToCss } from "@/lib/builder/style";
 import type {
   Breakpoint,
