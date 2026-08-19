@@ -51,6 +51,7 @@ export function InvitationRenderer({ config, ctx, editorHooks }: Props) {
           background: theme.bgColor ?? "#fbf8f4",
           color: theme.textColor ?? "#3b332c",
           fontFamily: theme.fontBody ?? "inherit",
+          width: CANVAS_WIDTH,
           minHeight: "100%",
         }}
       >
