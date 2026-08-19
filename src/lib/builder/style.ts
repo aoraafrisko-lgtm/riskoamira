@@ -10,29 +10,10 @@ export const resolveStyle = (node: FieldNode, bp: Breakpoint): StyleConfig =>
   mergeStyle(node.style, node.responsive?.[bp]);
 
 /**
- * Penyesuaian otomatis untuk layar HP: padding tidak menempel tepi,
- * heading besar dikecilkan, dan lebar tetap dibuat fleksibel.
+ * Kanvas kini berukuran tetap 1080×1920 dan diskalakan sebagai satu kesatuan,
+ * jadi tidak ada lagi penyesuaian gaya per breakpoint (WYSIWYG penuh).
  */
-export const scaleStyle = (s: StyleConfig, bp: Breakpoint): StyleConfig => {
-  if (bp === "desktop") return s;
-  const f = bp === "mobile" ? 0.72 : 0.88;
-  const out: StyleConfig = { ...s };
-  if (s.fontSize !== undefined) {
-    out.fontSize = s.fontSize > 20 ? Math.max(18, Math.round(s.fontSize * f)) : s.fontSize;
-  }
-  if (s.paddingY !== undefined) out.paddingY = Math.round(s.paddingY * f);
-  if (s.paddingX !== undefined) {
-    out.paddingX = bp === "mobile" ? Math.min(s.paddingX, 20) : Math.round(s.paddingX * f);
-  }
-  if (bp === "mobile") {
-    if (out.paddingX === undefined) out.paddingX = 20;
-    if (s.marginTop !== undefined) out.marginTop = Math.round(s.marginTop * f);
-    if (s.marginBottom !== undefined) out.marginBottom = Math.round(s.marginBottom * f);
-    if (s.width && /px$/.test(s.width)) out.width = "100%";
-    if (s.letterSpacing !== undefined && s.letterSpacing > 3) out.letterSpacing = 3;
-  }
-  return out;
-};
+export const scaleStyle = (s: StyleConfig, _bp: Breakpoint): StyleConfig => s;
 
 export const resolvePos = (node: FieldNode, bp: Breakpoint) => ({
   x: 0,

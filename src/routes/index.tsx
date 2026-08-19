@@ -43,19 +43,21 @@ function PublicInvitation() {
   if (!config) return <div style={{ minHeight: "100vh", background: "#fbf8f4" }} />;
 
   return (
-    <main>
+    <main style={{ minHeight: "100dvh", background: "#141210" }}>
       <h1 className="sr-only">{config.title ?? "Undangan Pernikahan"}</h1>
-      <InvitationRenderer
-        config={config}
-        ctx={{
-          editor: false,
-          breakpoint: bp,
-          ...(guest?.name ? { guestName: guest.name } : {}),
-          ...(guest?.category ? { guestCategory: guest.category } : {}),
-          ...(guest?.greeting ? { guestGreeting: guest.greeting } : {}),
-          ...(token ? { token } : {}),
-        }}
-      />
+      <CanvasStage fit="viewport">
+        <InvitationRenderer
+          config={config}
+          ctx={{
+            editor: false,
+            breakpoint: "mobile",
+            ...(guest?.name ? { guestName: guest.name } : {}),
+            ...(guest?.category ? { guestCategory: guest.category } : {}),
+            ...(guest?.greeting ? { guestGreeting: guest.greeting } : {}),
+            ...(token ? { token } : {}),
+          }}
+        />
+      </CanvasStage>
     </main>
   );
 }
