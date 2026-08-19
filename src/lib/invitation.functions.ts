@@ -82,10 +82,10 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
     const db = await admin();
     const { data: row } = await db
       .from("invitation")
-      .select("published_config, draft_config")
+      .select("published_config")
       .eq("id", "main")
       .single();
-    const config = (row?.published_config ?? row?.draft_config ?? null) as unknown as InvitationConfig | null;
+    const config = (row?.published_config ?? null) as unknown as InvitationConfig | null;
     let guest: { name: string; category: string; greeting: string | null } | null = null;
     if (data?.token) {
       const { data: g } = await db
