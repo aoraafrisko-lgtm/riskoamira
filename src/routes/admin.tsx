@@ -838,10 +838,7 @@ function SettingsPanel({
   const posEff: FreePos = { ...posBase, ...(field?.posResponsive?.[breakpoint] ?? {}) };
   const patchPos = (patch: FreePos) => {
     if (!field) return;
-    const p =
-      breakpoint === "desktop"
-        ? { pos: { ...posBase, ...patch } }
-        : { posResponsive: { ...(field.posResponsive ?? {}), [breakpoint]: { ...(field.posResponsive?.[breakpoint] ?? {}), ...patch } } };
+    const p = { pos: { ...posBase, ...patch } };
     commit((c) => T.updateField(c, selection.sectionId, selection.subsectionId!, selection.fieldId!, p));
   };
 
