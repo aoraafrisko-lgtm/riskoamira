@@ -1,31 +1,37 @@
-# Cover Opening + Navigasi Section
+# Cover Opening, Navigasi Section & Manajemen Tamu
 
-Menambahkan pengalaman pembuka undangan: layar cover mewah dengan tombol "Buka Undangan", lalu masuk ke Section 1, plus navigasi cepat antar section.
+## 1. Cover + tombol "Buka Undangan"
 
-## 1. Cover (Section pertama sebagai cover)
+- Section pertama diperlakukan sebagai cover pada tampilan publik.
+- Sebelum dibuka: hanya cover terlihat, scroll dikunci, ada sapaan `Kepada: <nama tamu>` bila ada `?guest=` token, dan tombol **Buka Undangan** memakai warna aksen tema dengan shimmer/pulse halus.
+- Saat ditekan: cover zoom-in + fade keluar, konten undangan fade/slide masuk, lalu otomatis scroll ke Section 1 (section setelah cover). Semua animasi CSS/transform, ukuran kanvas 1080×1920 tetap.
 
-- Section pertama pada config diperlakukan sebagai cover saat mode publik.
-- Cover ditampilkan penuh (1080×1920, sama seperti section lain) dengan tombol **Buka Undangan** di bawah, ditambah sapaan tamu (`Kepada: <nama tamu>`) bila ada token `?guest=`.
-- Sebelum dibuka: hanya cover yang terlihat, scroll dikunci, dan opsional musik/animasi belum jalan.
-- Efek "wah" saat dibuka: cover zoom-in ringan + fade keluar, konten undangan fade/slide masuk, lalu otomatis scroll ke Section 1 (section setelah cover). Animasi murni CSS/transform agar tetap ringan dan tidak mengubah ukuran kanvas.
-- Tombol cover memakai warna aksen tema (`theme.accentColor`) dengan shimmer/pulse halus, jadi ikut tema yang sudah ada.
+## 2. Navigasi antar section
 
-## 2. Navigasi Section
+- Tombol bulat mengapung di kanan bawah kanvas, muncul setelah undangan dibuka.
+- Diketuk → daftar nama section (`section.name`), melewati section `hidden` dan cover.
+- Pilih section → scroll halus ke section itu; section aktif ditandai (deteksi via IntersectionObserver).
 
-- Tombol bulat mengapung (kanan bawah kanvas) muncul setelah undangan dibuka.
-- Diketuk → panel daftar section (memakai `section.name`, melewati section yang `hidden` dan cover).
-- Memilih section → scroll halus ke section tersebut; indikator menandai section aktif.
-- Panel bisa ditutup, tidak mengganggu tampilan saat idle.
+## 3. Menu Tamu jadi halaman sendiri (lebih interaktif)
 
-## 3. Editor Admin
+Memisahkan admin jadi dua tampilan penuh: **Editor** dan **Tamu**, bukan tab sempit seperti sekarang.
 
-- Preview editor tidak dikunci oleh cover (tetap bisa mengedit semua section langsung).
-- Ada tombol kecil untuk mencoba pengalaman cover/opening dari editor pada mode preview fullscreen.
-- Nama section di panel Struktur otomatis dipakai sebagai label navigasi, jadi tidak ada setting baru yang perlu diisi.
+- Halaman Tamu: header ringkas dengan statistik (total tamu, sudah RSVP, hadir, tidak hadir, total headcount).
+- Tabel tamu interaktif: pencarian, filter kategori, urut (nama/terbaru), pilih banyak (checkbox) untuk hapus massal, dan status RSVP per tamu.
+- Tiap tamu punya aksi cepat: salin link undangan, buka pratinjau link, bagikan via WhatsApp (memakai nomor telepon bila ada), edit, hapus.
+- **Edit tamu punya tampilan sendiri** (panel/drawer terpisah, bukan inline): nama, kategori, nomor telepon, sapaan khusus, plus link + token tamu.
+- Tab RSVP & Ucapan di halaman yang sama, dengan filter hadir/tidak hadir.
+- Di layar HP semuanya tetap enak dipakai: daftar berbentuk kartu, tombol aksi besar, drawer bawah untuk edit.
+
+## 4. Import & Export tamu
+
+- **Import**: dialog khusus dengan area upload (klik atau drag & drop) untuk file CSV/teks, contoh format yang bisa diunduh sebagai template, pratinjau baris hasil parsing sebelum disimpan, hitung baris valid/dilewati, lalu konfirmasi impor.
+- Format didukung: `nama, kategori, telepon, sapaan` — pemisah koma atau titik koma, baris header otomatis dilewati (sudah sesuai perilaku impor saat ini).
+- **Export**: unduh CSV lengkap (nama, kategori, telepon, sapaan, token, link undangan) untuk seluruh tamu atau hanya hasil filter/pilihan; tambahan tombol "Salin semua link".
 
 ## Catatan teknis
 
-- Komponen baru: `src/components/invitation/CoverGate.tsx` (overlay cover + animasi buka) dan `src/components/invitation/SectionNav.tsx` (tombol + daftar section).
-- `src/routes/index.tsx`: state `opened`, render `CoverGate` di atas `CanvasStage`, kunci scroll saat belum dibuka, dan scroll ke section pertama non-cover setelah dibuka.
-- Scroll memakai `data-section-id` yang sudah dirender `InvitationRenderer` (`scrollIntoView({ behavior: "smooth" })`), section aktif dideteksi dengan `IntersectionObserver`.
-- Tidak mengubah skema database maupun struktur config; semua murni presentasi.
+- Komponen baru: `src/components/invitation/CoverGate.tsx`, `src/components/invitation/SectionNav.tsx`, dan `src/components/admin/GuestsManager.tsx` (+ dialog import & drawer edit) untuk memecah `admin.tsx` yang sudah panjang.
+- Scroll section memakai `data-section-id` yang sudah dirender `InvitationRenderer`.
+- Server function yang ada dipakai apa adanya: `listGuests`, `saveGuest`, `deleteGuest`, `importGuestsCsv`, `listRsvps`. Parsing pratinjau CSV dilakukan di sisi klien sebelum dikirim; hapus massal memanggil `deleteGuest` per baris. Export dibuat di klien dari data yang sudah dimuat.
+- Tidak ada perubahan skema database dan tidak ada perubahan struktur config undangan.
