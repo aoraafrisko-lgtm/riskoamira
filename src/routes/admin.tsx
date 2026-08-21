@@ -231,10 +231,8 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
       if (!sel.fieldId || !sel.subsectionId) return;
       const f = T.findField(config, sel.sectionId, sel.subsectionId, sel.fieldId);
       if (!f) return;
-      const patch =
-        breakpoint === "desktop"
-          ? { pos: { ...(f.pos ?? {}), ...pos } }
-          : { posResponsive: { ...(f.posResponsive ?? {}), [breakpoint]: { ...(f.posResponsive?.[breakpoint] ?? {}), ...pos } } };
+      // kanvas tunggal 1080×1920 → posisi disimpan di satu tempat
+      const patch = { pos: { ...(f.pos ?? {}), ...pos } };
       commit((c) => T.updateField(c, sel.sectionId, sel.subsectionId!, sel.fieldId!, patch));
     },
     toolbar: (sel: Selection) => <Toolbar sel={sel} config={config} commit={commit} setSelection={setSelection} />,
