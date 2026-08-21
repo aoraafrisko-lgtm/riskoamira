@@ -209,7 +209,6 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
     return () => window.removeEventListener("keydown", h);
   }, [undo, redo, doSave, config]);
 
-  const width = breakpoint === "mobile" ? 390 : breakpoint === "tablet" ? 768 : 1024;
 
   const hooks = {
     selection,
