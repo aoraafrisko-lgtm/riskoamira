@@ -324,17 +324,14 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
 
         {/* PREVIEW */}
         <main className="min-h-0 flex-1 overflow-auto bg-muted/50 p-2 pb-20 sm:p-4 lg:pb-4">
-          <div
-            className={`mx-auto overflow-hidden border bg-background shadow-sm transition-all ${
-              breakpoint === "mobile" ? "rounded-[26px]" : "rounded-xl"
-            }`}
-            style={{ maxWidth: width }}
-          >
-            <InvitationRenderer
-              config={config}
-              ctx={{ editor: true, breakpoint, guestName: "Bapak Andi" }}
-              editorHooks={hooks}
-            />
+          <div className="mx-auto overflow-hidden rounded-[26px] border bg-background shadow-sm" style={{ maxWidth: 460 }}>
+            <CanvasStage fit="container">
+              <InvitationRenderer
+                config={config}
+                ctx={{ editor: true, breakpoint, guestName: "Bapak Andi" }}
+                editorHooks={hooks}
+              />
+            </CanvasStage>
           </div>
         </main>
 
