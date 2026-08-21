@@ -22,6 +22,7 @@ import {
   type ControlDef,
 } from "@/lib/builder/registry";
 import { SECTION_PRESETS, SUBSECTION_PRESETS, createSection, createSubsection } from "@/lib/builder/presets";
+import { CanvasStage } from "@/components/invitation/CanvasStage";
 import * as T from "@/lib/builder/tree";
 import { emptyConfig, uid } from "@/lib/builder/types";
 import type { Breakpoint, FreePos, InvitationConfig, Photo, Selection, StyleConfig } from "@/lib/builder/types";
