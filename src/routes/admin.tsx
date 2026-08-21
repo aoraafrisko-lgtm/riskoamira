@@ -257,16 +257,13 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
 
   if (fullscreen) {
     return (
-      <div className="fixed inset-0 z-50 overflow-auto bg-muted/40">
+      <div className="fixed inset-0 z-50 overflow-auto" style={{ background: "#141210" }}>
         <Button className="fixed right-3 top-3 z-50" size="sm" onClick={() => setFullscreen(false)}>
           Tutup
         </Button>
-        <div
-          className="mx-auto min-h-full overflow-hidden bg-background shadow-lg sm:my-4 sm:rounded-[28px] sm:border"
-          style={{ maxWidth: width }}
-        >
+        <CanvasStage fit="viewport">
           <InvitationRenderer config={config} ctx={{ editor: false, breakpoint }} />
-        </div>
+        </CanvasStage>
       </div>
     );
   }
