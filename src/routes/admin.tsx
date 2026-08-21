@@ -22,6 +22,7 @@ import {
   type ControlDef,
 } from "@/lib/builder/registry";
 import { SECTION_PRESETS, SUBSECTION_PRESETS, createSection, createSubsection } from "@/lib/builder/presets";
+import { CanvasStage } from "@/components/invitation/CanvasStage";
 import * as T from "@/lib/builder/tree";
 import { emptyConfig, uid } from "@/lib/builder/types";
 import type { Breakpoint, FreePos, InvitationConfig, Photo, Selection, StyleConfig } from "@/lib/builder/types";
@@ -108,7 +109,7 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
   const [past, setPast] = useState<InvitationConfig[]>([]);
   const [future, setFuture] = useState<InvitationConfig[]>([]);
   const [selection, setSelection] = useState<Selection | null>(null);
-  const [breakpoint, setBreakpoint] = useState<Breakpoint>("mobile");
+  const breakpoint: Breakpoint = "mobile";
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [loaded, setLoaded] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
@@ -209,7 +210,6 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
     return () => window.removeEventListener("keydown", h);
   }, [undo, redo, doSave, config]);
 
-  const width = breakpoint === "mobile" ? 390 : breakpoint === "tablet" ? 768 : 1024;
 
   const hooks = {
     selection,
@@ -231,10 +231,8 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
       if (!sel.fieldId || !sel.subsectionId) return;
       const f = T.findField(config, sel.sectionId, sel.subsectionId, sel.fieldId);
       if (!f) return;
-      const patch =
-        breakpoint === "desktop"
-          ? { pos: { ...(f.pos ?? {}), ...pos } }
-          : { posResponsive: { ...(f.posResponsive ?? {}), [breakpoint]: { ...(f.posResponsive?.[breakpoint] ?? {}), ...pos } } };
+      // kanvas tunggal 1080×1920 → posisi disimpan di satu tempat
+      const patch = { pos: { ...(f.pos ?? {}), ...pos } };
       commit((c) => T.updateField(c, sel.sectionId, sel.subsectionId!, sel.fieldId!, patch));
     },
     toolbar: (sel: Selection) => <Toolbar sel={sel} config={config} commit={commit} setSelection={setSelection} />,
@@ -257,16 +255,13 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
 
   if (fullscreen) {
     return (
-      <div className="fixed inset-0 z-50 overflow-auto bg-muted/40">
+      <div className="fixed inset-0 z-50 overflow-auto" style={{ background: "#141210" }}>
         <Button className="fixed right-3 top-3 z-50" size="sm" onClick={() => setFullscreen(false)}>
           Tutup
         </Button>
-        <div
-          className="mx-auto min-h-full overflow-hidden bg-background shadow-lg sm:my-4 sm:rounded-[28px] sm:border"
-          style={{ maxWidth: width }}
-        >
+        <CanvasStage fit="viewport">
           <InvitationRenderer config={config} ctx={{ editor: false, breakpoint }} />
-        </div>
+        </CanvasStage>
       </div>
     );
   }
@@ -284,19 +279,9 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          <div className="flex rounded-md border p-0.5">
-            {(["mobile", "tablet", "desktop"] as Breakpoint[]).map((bp) => (
-              <button
-                key={bp}
-                type="button"
-                onClick={() => setBreakpoint(bp)}
-                aria-label={bp}
-                className={`h-7 w-8 rounded text-sm ${breakpoint === bp ? "bg-secondary" : "text-muted-foreground"}`}
-              >
-                {bp === "mobile" ? "▯" : bp === "tablet" ? "▭" : "🖥"}
-              </button>
-            ))}
-          </div>
+          <span className="hidden rounded-md border px-2 py-1 text-[11px] text-muted-foreground sm:inline">
+            Mobile 1080×1920
+          </span>
           <Button size="icon" variant="ghost" className="h-8 w-8" onClick={undo} disabled={!past.length} aria-label="Undo">↶</Button>
           <Button size="icon" variant="ghost" className="h-8 w-8" onClick={redo} disabled={!future.length} aria-label="Redo">↷</Button>
           <Button size="sm" variant="outline" className="h-8 px-2" onClick={() => setFullscreen(true)}>Preview</Button>
@@ -337,17 +322,14 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
 
         {/* PREVIEW */}
         <main className="min-h-0 flex-1 overflow-auto bg-muted/50 p-2 pb-20 sm:p-4 lg:pb-4">
-          <div
-            className={`mx-auto overflow-hidden border bg-background shadow-sm transition-all ${
-              breakpoint === "mobile" ? "rounded-[26px]" : "rounded-xl"
-            }`}
-            style={{ maxWidth: width }}
-          >
-            <InvitationRenderer
-              config={config}
-              ctx={{ editor: true, breakpoint, guestName: "Bapak Andi" }}
-              editorHooks={hooks}
-            />
+          <div className="mx-auto overflow-hidden rounded-[26px] border bg-background shadow-sm" style={{ maxWidth: 460 }}>
+            <CanvasStage fit="container">
+              <InvitationRenderer
+                config={config}
+                ctx={{ editor: true, breakpoint, guestName: "Bapak Andi" }}
+                editorHooks={hooks}
+              />
+            </CanvasStage>
           </div>
         </main>
 
@@ -856,10 +838,7 @@ function SettingsPanel({
   const posEff: FreePos = { ...posBase, ...(field?.posResponsive?.[breakpoint] ?? {}) };
   const patchPos = (patch: FreePos) => {
     if (!field) return;
-    const p =
-      breakpoint === "desktop"
-        ? { pos: { ...posBase, ...patch } }
-        : { posResponsive: { ...(field.posResponsive ?? {}), [breakpoint]: { ...(field.posResponsive?.[breakpoint] ?? {}), ...patch } } };
+    const p = { pos: { ...posBase, ...patch } };
     commit((c) => T.updateField(c, selection.sectionId, selection.subsectionId!, selection.fieldId!, p));
   };
 

@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
+import { CanvasStage } from "@/components/invitation/CanvasStage";
 import { InvitationRenderer } from "@/components/invitation/InvitationRenderer";
-import { useViewportBreakpoint } from "@/hooks/use-viewport-breakpoint";
 import { getPublicInvitation } from "@/lib/invitation.functions";
 import { emptyConfig, type InvitationConfig } from "@/lib/builder/types";
 
@@ -22,7 +22,6 @@ export const Route = createFileRoute("/")({
 
 function PublicInvitation() {
   const load = useServerFn(getPublicInvitation);
-  const bp = useViewportBreakpoint();
   const [config, setConfig] = useState<InvitationConfig | null>(null);
   const [guest, setGuest] = useState<{ name: string; category: string; greeting: string | null } | null>(null);
   const token = useMemo(() => {
