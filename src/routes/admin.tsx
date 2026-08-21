@@ -281,19 +281,9 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          <div className="flex rounded-md border p-0.5">
-            {(["mobile", "tablet", "desktop"] as Breakpoint[]).map((bp) => (
-              <button
-                key={bp}
-                type="button"
-                onClick={() => setBreakpoint(bp)}
-                aria-label={bp}
-                className={`h-7 w-8 rounded text-sm ${breakpoint === bp ? "bg-secondary" : "text-muted-foreground"}`}
-              >
-                {bp === "mobile" ? "▯" : bp === "tablet" ? "▭" : "🖥"}
-              </button>
-            ))}
-          </div>
+          <span className="hidden rounded-md border px-2 py-1 text-[11px] text-muted-foreground sm:inline">
+            Mobile 1080×1920
+          </span>
           <Button size="icon" variant="ghost" className="h-8 w-8" onClick={undo} disabled={!past.length} aria-label="Undo">↶</Button>
           <Button size="icon" variant="ghost" className="h-8 w-8" onClick={redo} disabled={!future.length} aria-label="Redo">↷</Button>
           <Button size="sm" variant="outline" className="h-8 px-2" onClick={() => setFullscreen(true)}>Preview</Button>
