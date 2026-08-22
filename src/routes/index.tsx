@@ -41,22 +41,61 @@ function PublicInvitation() {
 
   if (!config) return <div style={{ minHeight: "100vh", background: "#fbf8f4" }} />;
 
+  const visible = (config.sections ?? []).filter((s) => !s.hidden);
+  const hasCover = visible.length > 1;
+  const navSections = (hasCover ? visible.slice(1) : visible).map((s) => ({ id: s.id, name: s.name ?? "Section" }));
+  const accent = config.theme?.accentColor ?? "#b08d57";
+  const locked = hasCover && !opened;
+
+  const open = () => {
+    setClosing(true);
+    window.setTimeout(() => {
+      setOpened(true);
+      const next = visible[1];
+      if (next) document.querySelector<HTMLElement>(`[data-section-id="${next.id}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 700);
+  };
+
   return (
-    <main style={{ minHeight: "100dvh", background: "#141210" }}>
+    <main
+      style={{
+        minHeight: "100dvh",
+        background: "#141210",
+        overflow: locked ? "hidden" : "auto",
+        height: locked ? "100dvh" : undefined,
+      }}
+    >
       <h1 className="sr-only">{config.title ?? "Undangan Pernikahan"}</h1>
-      <CanvasStage fit="viewport">
-        <InvitationRenderer
-          config={config}
-          ctx={{
-            editor: false,
-            breakpoint: "mobile",
-            ...(guest?.name ? { guestName: guest.name } : {}),
-            ...(guest?.category ? { guestCategory: guest.category } : {}),
-            ...(guest?.greeting ? { guestGreeting: guest.greeting } : {}),
-            ...(token ? { token } : {}),
-          }}
-        />
-      </CanvasStage>
+      <div
+        style={{
+          opacity: locked ? 0.96 : 1,
+          transition: "opacity 1s ease",
+        }}
+      >
+        <CanvasStage fit="viewport">
+          <InvitationRenderer
+            config={config}
+            ctx={{
+              editor: false,
+              breakpoint: "mobile",
+              ...(guest?.name ? { guestName: guest.name } : {}),
+              ...(guest?.category ? { guestCategory: guest.category } : {}),
+              ...(guest?.greeting ? { guestGreeting: guest.greeting } : {}),
+              ...(token ? { token } : {}),
+            }}
+          />
+        </CanvasStage>
+      </div>
+      <CoverGate
+        visible={hasCover && !opened}
+        closing={closing}
+        accent={accent}
+        {...(config.title ? { title: config.title } : {})}
+        {...(guest?.name ? { guestName: guest.name } : {})}
+        onOpen={open}
+      />
+      <SectionNav sections={navSections} visible={!locked} accent={accent} />
     </main>
   );
 }
+
