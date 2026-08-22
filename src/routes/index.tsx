@@ -28,7 +28,7 @@ function PublicInvitation() {
   const [guest, setGuest] = useState<{ name: string; category: string; greeting: string | null } | null>(null);
   const [opened, setOpened] = useState(false);
   const [closing, setClosing] = useState(false);
-
+  const token = useMemo(() => {
     if (typeof window === "undefined") return undefined;
     return new URLSearchParams(window.location.search).get("guest") ?? undefined;
   }, []);
