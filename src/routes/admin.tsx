@@ -862,7 +862,10 @@ function SettingsPanel({
     if (selection.kind === "section") commit((c) => T.updateSection(c, selection.sectionId, { animation: anim }));
     else if (selection.kind === "subsection") commit((c) => T.updateSubsection(c, selection.sectionId, selection.subsectionId!, { animation: anim }));
     else commit((c) => T.updateField(c, selection.sectionId, selection.subsectionId!, selection.fieldId!, { animation: anim }));
+    // langsung tampilkan pratinjau setelah diedit
+    window.setTimeout(() => onPlayAnim(), 60);
   };
+
 
   const style = node.style ?? {};
 
