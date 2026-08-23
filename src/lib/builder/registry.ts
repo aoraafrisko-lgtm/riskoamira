@@ -242,6 +242,12 @@ const BEHAVIOR: Partial<Record<RenderKind, ControlDef[]>> = {
     { key: "fullWidth", label: "Lebar Penuh", type: "toggle" },
   ],
   image: [{ key: "lightbox", label: "Lightbox", type: "toggle" }],
+  "open-button": [
+    { key: "showGuest", label: "Tampilkan Nama Tamu", type: "toggle" },
+    { key: "shimmer", label: "Efek Kilau", type: "toggle" },
+    { key: "pulse", label: "Efek Denyut", type: "toggle" },
+    { key: "fullWidth", label: "Lebar Penuh", type: "toggle" },
+  ],
 };
 
 export const ANIMATION_EFFECTS = [
