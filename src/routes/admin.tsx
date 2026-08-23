@@ -246,8 +246,16 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
     />
   );
   const settingsPanel = (
-    <SettingsPanel config={config} selection={selection} commit={commit} breakpoint={breakpoint} code={code} />
+    <SettingsPanel
+      config={config}
+      selection={selection}
+      commit={commit}
+      breakpoint={breakpoint}
+      code={code}
+      onPlayAnim={playAnim}
+    />
   );
+
 
   if (fullscreen) {
     return (
