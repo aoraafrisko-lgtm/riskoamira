@@ -972,6 +972,12 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
       body = <div>{asString(c["text"], def?.name ?? field.type)}</div>;
   }
 
+  let wrapperStyle = style;
+  if (kind === "open-button") {
+    const { bgColor: _bg, radius: _r, ...restStyle } = style;
+    wrapperStyle = restStyle;
+  }
+
   return (
     <div
       ref={ref}
