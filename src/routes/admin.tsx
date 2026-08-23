@@ -1077,7 +1077,21 @@ function ControlInput({
         </div>
       );
     case "number":
-      return <NumRow label={ctl.label} value={typeof value === "number" ? value : undefined} onChange={onChange} />;
+      return (
+        <NumRow
+          label={ctl.label}
+          value={typeof value === "number" ? value : undefined}
+          onChange={(v) => {
+            let n = Number.isFinite(v) ? v : (ctl.min ?? 0);
+            if (ctl.min !== undefined) n = Math.max(ctl.min, n);
+            if (ctl.max !== undefined) n = Math.min(ctl.max, n);
+            onChange(n);
+          }}
+          min={ctl.min}
+          max={ctl.max}
+        />
+      );
+
     case "toggle":
       return (
         <div className="flex items-center justify-between">
