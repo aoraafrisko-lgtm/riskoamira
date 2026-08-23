@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { CanvasStage } from "@/components/invitation/CanvasStage";
-import { CoverGate } from "@/components/invitation/CoverGate";
 import { SectionNav } from "@/components/invitation/SectionNav";
 import { InvitationRenderer } from "@/components/invitation/InvitationRenderer";
 import { getPublicInvitation } from "@/lib/invitation.functions";
