@@ -344,6 +344,7 @@ const DEFS: Def[] = [
   { type: "calendar", name: "Calendar", category: "Wedding", description: "Tanggal berbentuk kalender", icon: "Calendar", render: "date", content: { date: "2026-12-12" } },
 
   // ---------- INTERACTIVE ----------
+  { type: "open-invitation", name: "Buka Undangan", category: "Interactive", description: "Tombol pembuka cover (Section 1)", icon: "MailOpen", render: "open-button", content: { label: "Buka Undangan", caption: "Undangan Pernikahan", guestPrefix: "Kepada" }, style: { align: "center", bgColor: "#b08d57", textColor: "#ffffff", radius: 999, fontSize: 15 }, behavior: { showGuest: true, shimmer: true, pulse: true } },
   { type: "button", name: "Button", category: "Interactive", description: "Tombol link", icon: "MousePointerClick", render: "button", content: { label: "Buka Undangan", url: "#" }, behavior: { variant: "solid" } },
   { type: "whatsapp", name: "WhatsApp", category: "Interactive", description: "Chat WhatsApp", icon: "MessageCircle", render: "button", content: { label: "Hubungi via WhatsApp", url: "https://wa.me/628123456789" }, behavior: { variant: "outline", newTab: true } },
   { type: "maps-button", name: "Maps Button", category: "Interactive", description: "Tombol arah lokasi", icon: "Navigation", render: "button", content: { label: "Lihat Lokasi", url: "https://maps.google.com" }, behavior: { variant: "outline", newTab: true } },
