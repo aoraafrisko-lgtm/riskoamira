@@ -114,6 +114,8 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
   const [fieldPicker, setFieldPicker] = useState<{ sectionId: string; subId: string } | null>(null);
   const [panel, setPanel] = useState<"editor" | "guests">("editor");
   const [sheet, setSheet] = useState<"structure" | "settings" | "guests" | null>(null);
+  const [animPreview, setAnimPreview] = useState<{ nonce: number; fieldIds: string[] }>({ nonce: 0, fieldIds: [] });
+
 
   const load = useServerFn(getDraftConfig);
   const save = useServerFn(saveDraftConfig);
