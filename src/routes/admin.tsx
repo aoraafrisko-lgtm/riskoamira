@@ -116,6 +116,25 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
   const [sheet, setSheet] = useState<"structure" | "settings" | "guests" | null>(null);
   const [animPreview, setAnimPreview] = useState<{ nonce: number; fieldIds: string[] }>({ nonce: 0, fieldIds: [] });
 
+  /** Putar ulang animasi pada kanvas editor untuk item yang sedang dipilih. */
+  const playAnim = (scope: "selection" | "section" = "selection") => {
+    if (!selection) return;
+    const section = T.findSection(config, selection.sectionId);
+    if (!section) return;
+    let ids: string[] = [];
+    if (scope === "section" || selection.kind === "section") {
+      ids = (section.subsections ?? []).flatMap((s) => (s.fields ?? []).map((f) => f.id));
+    } else if (selection.kind === "subsection") {
+      const sub = T.findSubsection(config, selection.sectionId, selection.subsectionId);
+      ids = (sub?.fields ?? []).map((f) => f.id);
+    } else if (selection.fieldId) {
+      ids = [selection.fieldId];
+    }
+    if (!ids.length) return;
+    setAnimPreview((p) => ({ nonce: p.nonce + 1, fieldIds: ids }));
+  };
+
+
 
   const load = useServerFn(getDraftConfig);
   const save = useServerFn(saveDraftConfig);
