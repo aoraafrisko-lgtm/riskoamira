@@ -57,17 +57,33 @@ export const styleToCss = (s: StyleConfig = {}): CSSProperties => {
   return css;
 };
 
+/** Efek yang memang berupa animasi berulang (bukan animasi masuk). */
+const AMBIENT = ["float", "pulse", "kenburns", "shimmer", "parallax"];
+
 export const animationCss = (a: AnimationConfig = {}, visible = true): CSSProperties => {
   const effect = a.effect ?? "none";
   if (effect === "none") return {};
   const duration = `${a.duration ?? 700}ms`;
   const delay = `${a.delay ?? 0}ms`;
   const loop = a.repeat === "loop";
-  if (loop || ["float", "pulse", "kenburns"].includes(effect)) {
+
+  // Animasi ambient / berulang → pakai keyframes inv-*
+  if (AMBIENT.includes(effect) || loop) {
+    const name = `inv-${effect === "bounce" ? "bounce" : effect}`;
+    const iteration = loop || AMBIENT.includes(effect) ? "infinite alternate" : "1 normal";
     return {
-      animation: `inv-${effect} ${duration} ease-in-out ${delay} infinite alternate`,
+      opacity: 1,
+      animation: `${name} ${duration} ease-in-out ${delay} ${iteration}`,
     };
   }
+
+  // Animasi masuk memantul
+  if (effect === "bounce") {
+    return visible
+      ? { animation: `inv-bounce ${duration} cubic-bezier(.2,.7,.2,1) ${delay} both` }
+      : { opacity: 0 };
+  }
+
   if (!visible) {
     const offset = 24;
     const dir = a.direction ?? "up";
@@ -97,3 +113,4 @@ export const animationCss = (a: AnimationConfig = {}, visible = true): CSSProper
     transition: `opacity ${duration} ease ${delay}, transform ${duration} cubic-bezier(.2,.7,.2,1) ${delay}`,
   };
 };
+
