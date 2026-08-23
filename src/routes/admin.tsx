@@ -312,22 +312,16 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
 
       <div className="flex min-h-0 flex-1 lg:flex-row">
         {/* STRUCTURE — desktop only */}
-        <aside className="hidden w-72 shrink-0 border-r bg-card lg:block">
-          <Tabs value={panel} onValueChange={(v) => setPanel(v as "editor" | "guests")}>
-            <TabsList className="m-2 grid w-[calc(100%-1rem)] grid-cols-2">
-              <TabsTrigger value="editor">Struktur</TabsTrigger>
-              <TabsTrigger value="guests">Tamu</TabsTrigger>
-            </TabsList>
-            <TabsContent value="editor" className="m-0">
-              <ScrollArea className="h-[calc(100dvh-8.5rem)]">{structureTree}</ScrollArea>
-            </TabsContent>
-            <TabsContent value="guests" className="m-0">
-              <ScrollArea className="h-[calc(100dvh-8.5rem)]">
-                <GuestsPanel code={code} />
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
+        <aside className="hidden w-72 shrink-0 flex-col border-r bg-card lg:flex">
+          <div className="flex items-center justify-between px-3 py-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Struktur</span>
+            <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => setPanel("guests")}>
+              Tamu →
+            </Button>
+          </div>
+          <ScrollArea className="h-[calc(100dvh-6.2rem)]">{structureTree}</ScrollArea>
         </aside>
+
 
         {/* PREVIEW */}
         <main className="min-h-0 flex-1 overflow-auto bg-muted/50 p-2 pb-20 sm:p-4 lg:pb-4">
