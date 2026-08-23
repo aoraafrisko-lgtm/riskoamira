@@ -1034,7 +1034,20 @@ function SettingsPanel({
           <NumRow label="Duration (ms)" value={node.animation?.duration} step={50} onChange={(v) => patchAnimation("duration", v)} />
           <NumRow label="Delay (ms)" value={node.animation?.delay} step={50} onChange={(v) => patchAnimation("delay", v)} />
           <SelectRow label="Repeat" value={node.animation?.repeat ?? "once"} options={["once", "loop"]} onChange={(v) => patchAnimation("repeat", v)} />
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <Button size="sm" variant="default" className="h-8 text-[11px]" onClick={() => onPlayAnim()}>
+              ▶ Putar Animasi
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 text-[11px]" onClick={() => onPlayAnim("section")}>
+              ▶ Putar Section
+            </Button>
+          </div>
+          <p className="text-[11px] leading-relaxed text-muted-foreground">
+            Trigger <b>scroll</b> + Repeat <b>once</b> = animasi sekali saja. Pilih Repeat <b>loop</b> agar animasi
+            berulang terus / terputar lagi setiap kali di-scroll kembali.
+          </p>
         </TabsContent>
+
       </Tabs>
     </div>
   );
