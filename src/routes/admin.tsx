@@ -530,7 +530,7 @@ function Toolbar({
           {btn("↓", () => move(1))}
         </>
       )}
-      {fieldNode ? btn(fieldNode.free ? "🔒 Rapikan" : "✥ Bebas", toggleFree) : null}
+      {fieldNode ? btn(isFree ? "🔒 Rapikan" : "✥ Bebas", toggleFree) : null}
       {btn("Duplicate", duplicate)}
       {btn(node.hidden ? "Show" : "Hide", toggleHide)}
       {btn("Delete", remove)}
