@@ -515,7 +515,7 @@ function Toolbar({
 
   return (
     <div className="flex overflow-hidden rounded-md bg-primary shadow">
-      {fieldNode?.free ? (
+      {isFree ? (
         <>
           {btn("◀", () => nudge(-1, 0))}
           {btn("▶", () => nudge(1, 0))}
