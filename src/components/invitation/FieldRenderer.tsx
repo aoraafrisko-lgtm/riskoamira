@@ -391,7 +391,11 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
   const ctx = useRenderCtx();
   const def = getDefinition(field.type);
   const style = useMemo(() => scaleStyle(resolveStyle(field, ctx.breakpoint), ctx.breakpoint), [field, ctx.breakpoint]);
-  const { ref, visible } = useReveal<HTMLDivElement>(field.animation?.trigger === "scroll");
+  const replayNonce = ctx.animPreview?.fieldIds.includes(field.id) ? ctx.animPreview.nonce : 0;
+  const { ref, visible } = useReveal<HTMLDivElement>(field.animation?.trigger === "scroll" && !ctx.editor, {
+    once: (field.animation?.repeat ?? "once") === "once",
+    replayNonce,
+  });
   const c = field.content;
   const b = field.behavior;
   const radius = style.radius ?? 0;
