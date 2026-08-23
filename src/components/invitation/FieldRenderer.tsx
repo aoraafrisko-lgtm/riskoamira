@@ -396,8 +396,8 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
   const b = field.behavior;
   const radius = style.radius ?? 0;
   const kind = def?.render ?? "text";
-  const gridCols = Math.max(1, asNumber(b["columns"], 3));
-  const cols = ctx.breakpoint === "mobile" ? Math.min(gridCols, 2) : gridCols;
+  const cols = Math.min(6, Math.max(1, Math.round(asNumber(b["columns"], 3))));
+
 
   let body: React.ReactNode = null;
 

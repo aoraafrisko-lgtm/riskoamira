@@ -1015,17 +1015,20 @@ function FieldInput({ label, value, onChange }: { label: string; value: string; 
   );
 }
 
-function NumRow({ label, value, onChange, step = 1 }: { label: string; value: number | undefined; onChange: (v: number) => void; step?: number | undefined }) {
+function NumRow({ label, value, onChange, step = 1, min, max }: { label: string; value: number | undefined; onChange: (v: number) => void; step?: number | undefined; min?: number | undefined; max?: number | undefined }) {
   return (
     <div className="flex items-center justify-between gap-2">
       <Label className="text-xs">{label}</Label>
       <Input
         type="number"
         step={step}
+        min={min}
+        max={max}
         className="h-8 w-24 text-xs"
         value={value ?? ""}
         onChange={(e) => onChange(Number(e.target.value))}
       />
+
     </div>
   );
 }
@@ -1077,7 +1080,21 @@ function ControlInput({
         </div>
       );
     case "number":
-      return <NumRow label={ctl.label} value={typeof value === "number" ? value : undefined} onChange={onChange} />;
+      return (
+        <NumRow
+          label={ctl.label}
+          value={typeof value === "number" ? value : undefined}
+          onChange={(v) => {
+            let n = Number.isFinite(v) ? v : (ctl.min ?? 0);
+            if (ctl.min !== undefined) n = Math.max(ctl.min, n);
+            if (ctl.max !== undefined) n = Math.min(ctl.max, n);
+            onChange(n);
+          }}
+          min={ctl.min}
+          max={ctl.max}
+        />
+      );
+
     case "toggle":
       return (
         <div className="flex items-center justify-between">

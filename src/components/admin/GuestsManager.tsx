@@ -32,7 +32,33 @@ type Draft = { id?: string; name: string; category: string; phone: string; greet
 
 const TEMPLATE = "nama,kategori,telepon,sapaan\nBapak Andi,Keluarga,6281234567890,Bapak\nIbu Sari,Teman,,Ibu\n";
 
+const WA_KEY = "wa_message_template";
+const DEFAULT_WA = `Assalamu'alaikum / Salam sejahtera 🌿
+
+Kepada {sapaan} {nama},
+Dengan penuh kebahagiaan, kami mengundang Anda untuk hadir di acara pernikahan kami.
+
+Detail acara & konfirmasi kehadiran dapat dilihat pada undangan digital berikut:
+{link}
+
+Merupakan suatu kehormatan bagi kami apabila {sapaan} {nama} berkenan hadir dan memberikan doa restu.
+
+Terima kasih 🙏`;
+
+const WA_TOKENS = ["{nama}", "{sapaan}", "{kategori}", "{link}", "{token}"];
+
 const guestLink = (token: string) => `${typeof window !== "undefined" ? window.location.origin : ""}/?guest=${token}`;
+
+const fillTemplate = (tpl: string, g: GuestRow) =>
+  tpl
+    .replace(/\{nama\}/g, g.name)
+    .replace(/\{sapaan\}/g, g.greeting ?? "")
+    .replace(/\{kategori\}/g, g.category)
+    .replace(/\{token\}/g, g.token)
+    .replace(/\{link\}/g, guestLink(g.token))
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+
 
 function download(name: string, text: string, mime = "text/csv") {
   const url = URL.createObjectURL(new Blob([text], { type: mime }));
@@ -76,6 +102,27 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
   const [dragging, setDragging] = useState(false);
   const [rsvpFilter, setRsvpFilter] = useState<"all" | "yes" | "no">("all");
   const [busy, setBusy] = useState(false);
+  const [waTpl, setWaTpl] = useState(DEFAULT_WA);
+  const [tplOpen, setTplOpen] = useState(false);
+  const [tplDraft, setTplDraft] = useState(DEFAULT_WA);
+
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? window.localStorage.getItem(WA_KEY) : null;
+    if (saved) {
+      setWaTpl(saved);
+      setTplDraft(saved);
+    }
+  }, []);
+
+  const openWa = useCallback(
+    (g: GuestRow) => {
+      const text = encodeURIComponent(fillTemplate(waTpl, g));
+      const phone = (g.phone ?? "").replace(/\D/g, "");
+      window.open(phone ? `https://wa.me/${phone}?text=${text}` : `https://wa.me/?text=${text}`, "_blank");
+    },
+    [waTpl],
+  );
+
 
   const refresh = useCallback(() => {
     load({ data: { code } }).then((d) => setGuests(d as GuestRow[])).catch(() => toast.error("Gagal memuat tamu"));
@@ -204,8 +251,20 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
           <h2 className="text-lg font-semibold tracking-tight">Manajemen Tamu</h2>
           <p className="text-xs text-muted-foreground">Kelola daftar tamu, link personal, RSVP, import & export.</p>
         </div>
-        <div className="flex w-full gap-1.5 sm:ml-auto sm:w-auto">
+        <div className="flex w-full flex-wrap gap-1.5 sm:ml-auto sm:w-auto">
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex-1 sm:flex-none"
+            onClick={() => {
+              setTplDraft(waTpl);
+              setTplOpen(true);
+            }}
+          >
+            Pesan WA
+          </Button>
           <Button size="sm" variant="outline" className="flex-1 sm:flex-none" onClick={() => setImportOpen(true)}>Import</Button>
+
           <Button size="sm" variant="outline" className="flex-1 sm:flex-none"
             onClick={() => exportRows(picked.length ? guests.filter((g) => picked.includes(g.id)) : filtered)}
           >
@@ -334,20 +393,10 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
                     <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => window.open(link, "_blank")}>
                       Pratinjau
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 text-xs"
-                      onClick={() => {
-                        const text = encodeURIComponent(
-                          `${g.greeting ? g.greeting + " " : ""}${g.name}, kami mengundang Anda ke acara pernikahan kami. Undangan: ${link}`,
-                        );
-                        const phone = (g.phone ?? "").replace(/\D/g, "");
-                        window.open(phone ? `https://wa.me/${phone}?text=${text}` : `https://wa.me/?text=${text}`, "_blank");
-                      }}
-                    >
+                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => openWa(g)}>
                       WhatsApp
                     </Button>
+
                     <Button
                       size="sm"
                       variant="outline"
@@ -506,6 +555,62 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* WA TEMPLATE */}
+      <Sheet open={tplOpen} onOpenChange={(v) => setTplOpen(v)}>
+        <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto sm:max-w-xl">
+          <SheetHeader>
+            <SheetTitle>Template Pesan WhatsApp</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-3 pt-3">
+            <div className="flex flex-wrap gap-1.5">
+              {WA_TOKENS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className="rounded-md border px-2 py-1 text-[11px] hover:bg-accent"
+                  onClick={() => setTplDraft((s) => `${s}${s.endsWith(" ") || !s ? "" : " "}${t}`)}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+            <Textarea rows={12} className="text-xs" value={tplDraft} onChange={(e) => setTplDraft(e.target.value)} />
+            <div className="rounded-lg border bg-muted/50 p-3">
+              <div className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">Pratinjau</div>
+              <div className="whitespace-pre-wrap break-words text-xs">
+                {fillTemplate(
+                  tplDraft,
+                  guests[0] ?? {
+                    id: "-",
+                    name: "Bapak Andi",
+                    token: "contoh123",
+                    category: "Keluarga",
+                    greeting: "Bapak",
+                    phone: "6281234567890",
+                  },
+                )}
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  setWaTpl(tplDraft);
+                  window.localStorage.setItem(WA_KEY, tplDraft);
+                  setTplOpen(false);
+                  toast.success("Template pesan disimpan");
+                }}
+              >
+                Simpan template
+              </Button>
+              <Button variant="outline" onClick={() => setTplDraft(DEFAULT_WA)}>Kembalikan default</Button>
+              <Button variant="ghost" onClick={() => setTplOpen(false)}>Tutup</Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
+
   );
 }
