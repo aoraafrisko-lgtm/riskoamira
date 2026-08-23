@@ -251,8 +251,20 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
           <h2 className="text-lg font-semibold tracking-tight">Manajemen Tamu</h2>
           <p className="text-xs text-muted-foreground">Kelola daftar tamu, link personal, RSVP, import & export.</p>
         </div>
-        <div className="flex w-full gap-1.5 sm:ml-auto sm:w-auto">
+        <div className="flex w-full flex-wrap gap-1.5 sm:ml-auto sm:w-auto">
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex-1 sm:flex-none"
+            onClick={() => {
+              setTplDraft(waTpl);
+              setTplOpen(true);
+            }}
+          >
+            Pesan WA
+          </Button>
           <Button size="sm" variant="outline" className="flex-1 sm:flex-none" onClick={() => setImportOpen(true)}>Import</Button>
+
           <Button size="sm" variant="outline" className="flex-1 sm:flex-none"
             onClick={() => exportRows(picked.length ? guests.filter((g) => picked.includes(g.id)) : filtered)}
           >
@@ -381,20 +393,10 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
                     <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => window.open(link, "_blank")}>
                       Pratinjau
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 text-xs"
-                      onClick={() => {
-                        const text = encodeURIComponent(
-                          `${g.greeting ? g.greeting + " " : ""}${g.name}, kami mengundang Anda ke acara pernikahan kami. Undangan: ${link}`,
-                        );
-                        const phone = (g.phone ?? "").replace(/\D/g, "");
-                        window.open(phone ? `https://wa.me/${phone}?text=${text}` : `https://wa.me/?text=${text}`, "_blank");
-                      }}
-                    >
+                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => openWa(g)}>
                       WhatsApp
                     </Button>
+
                     <Button
                       size="sm"
                       variant="outline"
