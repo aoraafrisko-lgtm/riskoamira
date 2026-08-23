@@ -558,7 +558,7 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
 
       {/* WA TEMPLATE */}
       <Sheet open={tplOpen} onOpenChange={(v) => setTplOpen(v)}>
-        <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto sm:max-w-xl sm:side-right">
+        <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto sm:max-w-xl">
           <SheetHeader>
             <SheetTitle>Template Pesan WhatsApp</SheetTitle>
           </SheetHeader>
