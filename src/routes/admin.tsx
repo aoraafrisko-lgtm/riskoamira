@@ -904,21 +904,19 @@ function SettingsPanel({
                 <span className="text-[11px] font-semibold uppercase text-muted-foreground">
                   Posisi bebas — {breakpoint}
                 </span>
-                {sub?.layout !== "free" && (
-                  <Switch
-                    checked={!!field.free}
-                    onCheckedChange={(v) =>
-                      commit((c) =>
-                        T.updateField(c, selection.sectionId, selection.subsectionId!, selection.fieldId!, {
-                          free: v,
-                          ...(v ? { pos: { x: 10, y: 20, w: 60, ...(field.pos ?? {}) } } : {}),
-                        } as never),
-                      )
-                    }
-                  />
-                )}
+                <Switch
+                  checked={sub?.layout === "free" ? field.free !== false : !!field.free}
+                  onCheckedChange={(v) =>
+                    commit((c) =>
+                      T.updateField(c, selection.sectionId, selection.subsectionId!, selection.fieldId!, {
+                        free: v,
+                        ...(v ? { pos: { x: 10, y: 20, w: 60, ...(field.pos ?? {}) } } : { pos: undefined }),
+                      } as never),
+                    )
+                  }
+                />
               </div>
-              {field.free || sub?.layout === "free" ? (
+              {(sub?.layout === "free" ? field.free !== false : !!field.free) ? (
                 <>
                   <NumRow label="X (%)" value={posEff.x} onChange={(v) => patchPos({ x: v })} />
                   <NumRow label="Y (px)" value={posEff.y} onChange={(v) => patchPos({ y: v })} />
