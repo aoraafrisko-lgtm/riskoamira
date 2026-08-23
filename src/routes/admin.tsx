@@ -488,11 +488,15 @@ function Toolbar({
   const patchField = (patch: Record<string, unknown>) =>
     commit((c) => T.updateField(c, sel.sectionId, sel.subsectionId!, sel.fieldId!, patch as never));
 
+  const subNode = sel.kind === "field" ? T.findSubsection(config, sel.sectionId, sel.subsectionId) : null;
+  // di layout "free" field bebas secara default, kecuali ditandai free: false (Rapikan)
+  const isFree = fieldNode ? (subNode?.layout === "free" ? fieldNode.free !== false : !!fieldNode.free) : false;
+
   const toggleFree = () => {
     if (!fieldNode) return;
     patchField(
-      fieldNode.free
-        ? { free: false }
+      isFree
+        ? { free: false, pos: undefined }
         : { free: true, pos: { x: 10, y: 20, w: 60, ...(fieldNode.pos ?? {}) } },
     );
   };
