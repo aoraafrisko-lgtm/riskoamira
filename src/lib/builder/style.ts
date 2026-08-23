@@ -65,17 +65,16 @@ export const animationCss = (a: AnimationConfig = {}, visible = true): CSSProper
   if (effect === "none") return {};
   const duration = `${a.duration ?? 700}ms`;
   const delay = `${a.delay ?? 0}ms`;
-  const loop = a.repeat === "loop";
-
-  // Animasi ambient / berulang → pakai keyframes inv-*
-  if (AMBIENT.includes(effect) || loop) {
-    const name = `inv-${effect === "bounce" ? "bounce" : effect}`;
-    const iteration = loop || AMBIENT.includes(effect) ? "infinite alternate" : "1 normal";
+  // Efek ambient (float/pulse/kenburns/shimmer/parallax) selalu berjalan terus-menerus.
+  // Efek masuk dengan Repeat = loop diputar ulang setiap elemen kembali masuk viewport
+  // (lihat useReveal), bukan dibuat infinite di sini.
+  if (AMBIENT.includes(effect)) {
     return {
       opacity: 1,
-      animation: `${name} ${duration} ease-in-out ${delay} ${iteration}`,
+      animation: `inv-${effect} ${duration} ease-in-out ${delay} infinite alternate`,
     };
   }
+
 
   // Animasi masuk memantul
   if (effect === "bounce") {
