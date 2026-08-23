@@ -758,6 +758,63 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
         />
       );
       break;
+    case "open-button": {
+      const bg = style.bgColor ?? "#b08d57";
+      const fg = style.textColor ?? "#ffffff";
+      const anims = [
+        asBool(b["shimmer"], true) ? "inv-open-shimmer 3.4s linear infinite" : "",
+        asBool(b["pulse"], true) ? "inv-open-pulse 2.6s ease-in-out infinite" : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+      body = (
+        <div style={{ textAlign: style.align ?? "center" }}>
+          <style>{`
+            @keyframes inv-open-shimmer { 0%{background-position:-140% 0} 100%{background-position:240% 0} }
+            @keyframes inv-open-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.28)} 50%{box-shadow:0 0 0 14px rgba(255,255,255,0)} }
+          `}</style>
+          {asString(c["caption"]) ? (
+            <div style={{ fontSize: 12, letterSpacing: 3, textTransform: "uppercase", opacity: 0.8 }}>
+              {asString(c["caption"])}
+            </div>
+          ) : null}
+          {asBool(b["showGuest"], true) ? (
+            <div style={{ marginTop: 10, marginBottom: 14 }}>
+              <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.7 }}>
+                {asString(c["guestPrefix"], "Kepada")}
+              </div>
+              <div style={{ fontSize: 24, marginTop: 2 }}>{ctx.guestName ?? "Tamu Undangan"}</div>
+            </div>
+          ) : null}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              ctx.onOpenInvitation?.();
+            }}
+            style={{
+              display: asBool(b["fullWidth"]) ? "block" : "inline-block",
+              width: asBool(b["fullWidth"]) ? "100%" : undefined,
+              marginTop: 6,
+              padding: "13px 30px",
+              border: `1px solid ${bg}`,
+              borderRadius: style.radius ?? 999,
+              background: `linear-gradient(100deg, ${bg} 0%, ${fg}55 50%, ${bg} 100%)`,
+              backgroundSize: "220% 100%",
+              color: fg,
+              fontSize: style.fontSize ?? 15,
+              letterSpacing: 1.6,
+              textTransform: "uppercase",
+              cursor: "pointer",
+              animation: anims || undefined,
+            }}
+          >
+            {asString(c["label"], "Buka Undangan")}
+          </button>
+        </div>
+      );
+      break;
+    }
     case "button": {
       const variant = asString(b["variant"], "solid");
       body = (
