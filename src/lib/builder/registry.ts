@@ -66,6 +66,7 @@ export type RenderKind =
   | "icon"
   | "shape"
   | "particles"
+  | "open-button"
   | "html";
 
 export interface FieldDefinition {
