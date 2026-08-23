@@ -114,6 +114,27 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
   const [fieldPicker, setFieldPicker] = useState<{ sectionId: string; subId: string } | null>(null);
   const [panel, setPanel] = useState<"editor" | "guests">("editor");
   const [sheet, setSheet] = useState<"structure" | "settings" | "guests" | null>(null);
+  const [animPreview, setAnimPreview] = useState<{ nonce: number; fieldIds: string[] }>({ nonce: 0, fieldIds: [] });
+
+  /** Putar ulang animasi pada kanvas editor untuk item yang sedang dipilih. */
+  const playAnim = (scope: "selection" | "section" = "selection") => {
+    if (!selection) return;
+    const section = T.findSection(config, selection.sectionId);
+    if (!section) return;
+    let ids: string[] = [];
+    if (scope === "section" || selection.kind === "section") {
+      ids = (section.subsections ?? []).flatMap((s) => (s.fields ?? []).map((f) => f.id));
+    } else if (selection.kind === "subsection") {
+      const sub = T.findSubsection(config, selection.sectionId, selection.subsectionId);
+      ids = (sub?.fields ?? []).map((f) => f.id);
+    } else if (selection.fieldId) {
+      ids = [selection.fieldId];
+    }
+    if (!ids.length) return;
+    setAnimPreview((p) => ({ nonce: p.nonce + 1, fieldIds: ids }));
+  };
+
+
 
   const load = useServerFn(getDraftConfig);
   const save = useServerFn(saveDraftConfig);
@@ -246,8 +267,16 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
     />
   );
   const settingsPanel = (
-    <SettingsPanel config={config} selection={selection} commit={commit} breakpoint={breakpoint} code={code} />
+    <SettingsPanel
+      config={config}
+      selection={selection}
+      commit={commit}
+      breakpoint={breakpoint}
+      code={code}
+      onPlayAnim={playAnim}
+    />
   );
+
 
   if (fullscreen) {
     return (
@@ -325,7 +354,7 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
             <CanvasStage fit="container">
               <InvitationRenderer
                 config={config}
-                ctx={{ editor: true, breakpoint, guestName: "Bapak Andi" }}
+                ctx={{ editor: true, breakpoint, guestName: "Bapak Andi", animPreview }}
                 editorHooks={hooks}
               />
             </CanvasStage>
@@ -769,12 +798,14 @@ function SettingsPanel({
   commit,
   breakpoint,
   code,
+  onPlayAnim,
 }: {
   config: InvitationConfig;
   selection: Selection | null;
   commit: (fn: (c: InvitationConfig) => InvitationConfig) => void;
   breakpoint: Breakpoint;
   code: string;
+  onPlayAnim: (scope?: "selection" | "section") => void;
 }) {
   if (!selection) {
     return (
@@ -831,7 +862,10 @@ function SettingsPanel({
     if (selection.kind === "section") commit((c) => T.updateSection(c, selection.sectionId, { animation: anim }));
     else if (selection.kind === "subsection") commit((c) => T.updateSubsection(c, selection.sectionId, selection.subsectionId!, { animation: anim }));
     else commit((c) => T.updateField(c, selection.sectionId, selection.subsectionId!, selection.fieldId!, { animation: anim }));
+    // langsung tampilkan pratinjau setelah diedit
+    window.setTimeout(() => onPlayAnim(), 60);
   };
+
 
   const style = node.style ?? {};
 
@@ -1000,7 +1034,20 @@ function SettingsPanel({
           <NumRow label="Duration (ms)" value={node.animation?.duration} step={50} onChange={(v) => patchAnimation("duration", v)} />
           <NumRow label="Delay (ms)" value={node.animation?.delay} step={50} onChange={(v) => patchAnimation("delay", v)} />
           <SelectRow label="Repeat" value={node.animation?.repeat ?? "once"} options={["once", "loop"]} onChange={(v) => patchAnimation("repeat", v)} />
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <Button size="sm" variant="default" className="h-8 text-[11px]" onClick={() => onPlayAnim()}>
+              ▶ Putar Animasi
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 text-[11px]" onClick={() => onPlayAnim("section")}>
+              ▶ Putar Section
+            </Button>
+          </div>
+          <p className="text-[11px] leading-relaxed text-muted-foreground">
+            Trigger <b>scroll</b> + Repeat <b>once</b> = animasi sekali saja. Pilih Repeat <b>loop</b> agar animasi
+            berulang terus / terputar lagi setiap kali di-scroll kembali.
+          </p>
         </TabsContent>
+
       </Tabs>
     </div>
   );

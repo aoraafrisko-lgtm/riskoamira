@@ -142,3 +142,55 @@
     color: var(--color-foreground);
   }
 }
+
+/* ---------- Animasi undangan (inv-*) ---------- */
+@keyframes inv-fade {
+  from { opacity: .35 }
+  to { opacity: 1 }
+}
+@keyframes inv-slide {
+  from { transform: translateY(14px) }
+  to { transform: translateY(-14px) }
+}
+@keyframes inv-zoom {
+  from { transform: scale(.94) }
+  to { transform: scale(1.04) }
+}
+@keyframes inv-scale {
+  from { transform: scale(.97) }
+  to { transform: scale(1.03) }
+}
+@keyframes inv-rotate {
+  from { transform: rotate(-3deg) }
+  to { transform: rotate(3deg) }
+}
+@keyframes inv-reveal {
+  from { opacity: .4; transform: translateY(10px) }
+  to { opacity: 1; transform: translateY(0) }
+}
+@keyframes inv-float {
+  from { transform: translateY(-8px) }
+  to { transform: translateY(8px) }
+}
+@keyframes inv-pulse {
+  from { transform: scale(1); opacity: .82 }
+  to { transform: scale(1.05); opacity: 1 }
+}
+@keyframes inv-kenburns {
+  from { transform: scale(1) translate(0, 0) }
+  to { transform: scale(1.12) translate(-1.5%, -1.5%) }
+}
+@keyframes inv-parallax {
+  from { transform: translateY(18px) }
+  to { transform: translateY(-18px) }
+}
+@keyframes inv-bounce {
+  0% { opacity: 0; transform: translateY(28px) scale(.96) }
+  55% { opacity: 1; transform: translateY(-10px) scale(1.02) }
+  75% { transform: translateY(4px) scale(.995) }
+  100% { opacity: 1; transform: translateY(0) scale(1) }
+}
+@keyframes inv-shimmer {
+  from { opacity: .75; filter: brightness(1) }
+  to { opacity: 1; filter: brightness(1.25) }
+}
