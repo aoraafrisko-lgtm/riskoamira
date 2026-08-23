@@ -118,7 +118,10 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
 
   const exportRows = (rows: GuestRow[]) => {
-    if (!rows.length) return toast.error("Tidak ada tamu untuk diekspor");
+    if (!rows.length) {
+      toast.error("Tidak ada tamu untuk diekspor");
+      return;
+    }
     const csv = [
       "nama,kategori,telepon,sapaan,token,link",
       ...rows.map((g) =>
@@ -133,7 +136,10 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
 
   const doImport = () => {
     const { rows } = parseCsv(importText);
-    if (!rows.length) return toast.error("Tidak ada baris valid");
+    if (!rows.length) {
+      toast.error("Tidak ada baris valid");
+      return;
+    }
     setBusy(true);
     imp({ data: { code, csv: importText } })
       .then((r) => {
