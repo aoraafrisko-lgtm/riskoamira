@@ -23,6 +23,7 @@ import {
 } from "@/lib/builder/registry";
 import { SECTION_PRESETS, SUBSECTION_PRESETS, createSection, createSubsection } from "@/lib/builder/presets";
 import { CanvasStage } from "@/components/invitation/CanvasStage";
+import { GuestsManager } from "@/components/admin/GuestsManager";
 import * as T from "@/lib/builder/tree";
 import { emptyConfig, uid } from "@/lib/builder/types";
 import type { Breakpoint, FreePos, InvitationConfig, Photo, Selection, StyleConfig } from "@/lib/builder/types";
@@ -31,11 +32,6 @@ import {
   publishInvitation,
   saveDraftConfig,
   verifyAdminCode,
-  listGuests,
-  saveGuest,
-  deleteGuest,
-  importGuestsCsv,
-  listRsvps,
   uploadMedia,
 } from "@/lib/invitation.functions";
 
@@ -266,8 +262,17 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
     );
   }
 
+  if (panel === "guests") {
+    return (
+      <div className="min-h-[100dvh] bg-muted/30">
+        <GuestsManager code={code} onBack={() => setPanel("editor")} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-[100dvh] flex-col bg-muted/30">
+
       <header className="flex shrink-0 items-center gap-2 border-b bg-card px-3 py-2">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <span className="hidden truncate text-sm font-semibold sm:inline">Wedding Builder</span>
@@ -303,22 +308,16 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
 
       <div className="flex min-h-0 flex-1 lg:flex-row">
         {/* STRUCTURE — desktop only */}
-        <aside className="hidden w-72 shrink-0 border-r bg-card lg:block">
-          <Tabs value={panel} onValueChange={(v) => setPanel(v as "editor" | "guests")}>
-            <TabsList className="m-2 grid w-[calc(100%-1rem)] grid-cols-2">
-              <TabsTrigger value="editor">Struktur</TabsTrigger>
-              <TabsTrigger value="guests">Tamu</TabsTrigger>
-            </TabsList>
-            <TabsContent value="editor" className="m-0">
-              <ScrollArea className="h-[calc(100dvh-8.5rem)]">{structureTree}</ScrollArea>
-            </TabsContent>
-            <TabsContent value="guests" className="m-0">
-              <ScrollArea className="h-[calc(100dvh-8.5rem)]">
-                <GuestsPanel code={code} />
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
+        <aside className="hidden w-72 shrink-0 flex-col border-r bg-card lg:flex">
+          <div className="flex items-center justify-between px-3 py-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Struktur</span>
+            <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => setPanel("guests")}>
+              Tamu →
+            </Button>
+          </div>
+          <ScrollArea className="h-[calc(100dvh-6.2rem)]">{structureTree}</ScrollArea>
         </aside>
+
 
         {/* PREVIEW */}
         <main className="min-h-0 flex-1 overflow-auto bg-muted/50 p-2 pb-20 sm:p-4 lg:pb-4">
@@ -343,19 +342,17 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
       <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 gap-1 border-t bg-card/95 p-1.5 backdrop-blur lg:hidden">
         <Button size="sm" variant="outline" className="h-10 text-xs" onClick={() => setSheet("structure")}>Struktur</Button>
         <Button size="sm" variant={selection ? "default" : "outline"} className="h-10 text-xs" onClick={() => setSheet("settings")}>Setting</Button>
-        <Button size="sm" variant="outline" className="h-10 text-xs" onClick={() => setSheet("guests")}>Tamu</Button>
+        <Button size="sm" variant="outline" className="h-10 text-xs" onClick={() => setPanel("guests")}>Tamu</Button>
         <Button size="sm" variant="outline" className="h-10 text-xs" onClick={() => doSave(config)}>Save</Button>
       </div>
 
       <Sheet open={sheet !== null} onOpenChange={(o) => !o && setSheet(null)}>
         <SheetContent side="bottom" className="h-[78dvh] p-0 lg:hidden">
           <SheetHeader className="border-b px-4 py-3">
-            <SheetTitle className="text-base">
-              {sheet === "structure" ? "Struktur" : sheet === "settings" ? "Pengaturan" : "Tamu & RSVP"}
-            </SheetTitle>
+            <SheetTitle className="text-base">{sheet === "structure" ? "Struktur" : "Pengaturan"}</SheetTitle>
           </SheetHeader>
           <ScrollArea className="h-[calc(78dvh-3.5rem)]">
-            {sheet === "structure" ? structureTree : sheet === "settings" ? settingsPanel : sheet === "guests" ? <GuestsPanel code={code} /> : null}
+            {sheet === "structure" ? structureTree : sheet === "settings" ? settingsPanel : null}
           </ScrollArea>
         </SheetContent>
       </Sheet>
@@ -1201,138 +1198,6 @@ function PhotosInput({ value, onChange, code }: { value: Photo[]; onChange: (v: 
           {p.url ? <img src={p.url} alt="" className="h-14 w-full rounded object-cover" /> : null}
         </div>
       ))}
-    </div>
-  );
-}
-
-/* ---------------------- Guests panel ---------------------- */
-
-interface GuestRow {
-  id: string;
-  name: string;
-  token: string;
-  category: string;
-  greeting: string | null;
-  phone: string | null;
-}
-
-function GuestsPanel({ code }: { code: string }) {
-  const load = useServerFn(listGuests);
-  const save = useServerFn(saveGuest);
-  const del = useServerFn(deleteGuest);
-  const imp = useServerFn(importGuestsCsv);
-  const rsvpFn = useServerFn(listRsvps);
-  const [guests, setGuests] = useState<GuestRow[]>([]);
-  const [rsvps, setRsvps] = useState<{ guest_name: string; attending: boolean; headcount: number; message: string | null }[]>([]);
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("Umum");
-  const [q, setQ] = useState("");
-
-  const refresh = useCallback(() => {
-    load({ data: { code } }).then((d) => setGuests(d as GuestRow[])).catch(() => undefined);
-    rsvpFn({ data: { code } }).then((d) => setRsvps(d as never)).catch(() => undefined);
-  }, [code, load, rsvpFn]);
-
-  useEffect(refresh, [refresh]);
-
-  const filtered = guests.filter((g) => g.name.toLowerCase().includes(q.toLowerCase()) || g.category.toLowerCase().includes(q.toLowerCase()));
-
-  return (
-    <div className="space-y-3 p-3">
-      <div className="flex gap-1">
-        <Input className="h-8 text-xs" placeholder="Nama tamu" value={name} onChange={(e) => setName(e.target.value)} />
-        <Input className="h-8 w-24 text-xs" placeholder="Kategori" value={category} onChange={(e) => setCategory(e.target.value)} />
-        <Button
-          size="sm"
-          className="h-8"
-          onClick={() =>
-            save({ data: { code, guest: { name, category } } })
-              .then(() => {
-                setName("");
-                refresh();
-              })
-              .catch((e: Error) => toast.error(e.message))
-          }
-        >
-          ＋
-        </Button>
-      </div>
-      <Input className="h-8 text-xs" placeholder="Cari tamu..." value={q} onChange={(e) => setQ(e.target.value)} />
-      <div className="flex gap-1">
-        <label className="flex-1">
-          <span className="sr-only">Import CSV</span>
-          <input
-            type="file"
-            accept=".csv,text/csv"
-            className="w-full text-[11px]"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              const csv = await file.text();
-              imp({ data: { code, csv } })
-                .then((r) => {
-                  toast.success(`${r.inserted} tamu diimpor`);
-                  refresh();
-                })
-                .catch(() => toast.error("Import gagal"));
-            }}
-          />
-        </label>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 text-[11px]"
-          onClick={() => {
-            const csv = ["nama,kategori,telepon,token", ...guests.map((g) => `${g.name},${g.category},${g.phone ?? ""},${g.token}`)].join("\n");
-            const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "tamu.csv";
-            a.click();
-            URL.revokeObjectURL(url);
-          }}
-        >
-          Export CSV
-        </Button>
-      </div>
-      <div className="space-y-1">
-        {filtered.map((g) => (
-          <div key={g.id} className="rounded border p-2 text-xs">
-            <div className="flex items-center gap-1">
-              <span className="truncate font-medium">{g.name}</span>
-              <span className="text-[10px] text-muted-foreground">{g.category}</span>
-              <button
-                type="button"
-                className="ml-auto text-[11px] text-destructive"
-                onClick={() => del({ data: { code, id: g.id } }).then(refresh)}
-              >
-                Hapus
-              </button>
-            </div>
-            <button
-              type="button"
-              className="mt-1 w-full truncate text-left text-[10px] text-muted-foreground hover:text-foreground"
-              onClick={() => {
-                void navigator.clipboard?.writeText(`${window.location.origin}/?guest=${g.token}`);
-                toast.success("Link tamu disalin");
-              }}
-            >
-              /?guest={g.token} — klik untuk salin
-            </button>
-          </div>
-        ))}
-      </div>
-      <div className="pt-2">
-        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">RSVP ({rsvps.length})</div>
-        {rsvps.map((r, i) => (
-          <div key={i} className="rounded border p-2 text-[11px]">
-            <div className="font-medium">
-              {r.guest_name} — {r.attending ? "Hadir" : "Tidak hadir"} ({r.headcount})
-            </div>
-            {r.message ? <div className="text-muted-foreground">{r.message}</div> : null}
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

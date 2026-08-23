@@ -118,7 +118,10 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
 
   const exportRows = (rows: GuestRow[]) => {
-    if (!rows.length) return toast.error("Tidak ada tamu untuk diekspor");
+    if (!rows.length) {
+      toast.error("Tidak ada tamu untuk diekspor");
+      return;
+    }
     const csv = [
       "nama,kategori,telepon,sapaan,token,link",
       ...rows.map((g) =>
@@ -133,7 +136,10 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
 
   const doImport = () => {
     const { rows } = parseCsv(importText);
-    if (!rows.length) return toast.error("Tidak ada baris valid");
+    if (!rows.length) {
+      toast.error("Tidak ada baris valid");
+      return;
+    }
     setBusy(true);
     imp({ data: { code, csv: importText } })
       .then((r) => {
@@ -190,20 +196,22 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-4 p-3 pb-28 sm:p-6 lg:pb-6">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {onBack ? (
           <Button size="sm" variant="ghost" onClick={onBack}>← Editor</Button>
         ) : null}
-        <div>
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold tracking-tight">Manajemen Tamu</h2>
           <p className="text-xs text-muted-foreground">Kelola daftar tamu, link personal, RSVP, import & export.</p>
         </div>
-        <div className="ml-auto flex gap-1.5">
-          <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>Import</Button>
-          <Button size="sm" variant="outline" onClick={() => exportRows(picked.length ? guests.filter((g) => picked.includes(g.id)) : filtered)}>
+        <div className="flex w-full gap-1.5 sm:ml-auto sm:w-auto">
+          <Button size="sm" variant="outline" className="flex-1 sm:flex-none" onClick={() => setImportOpen(true)}>Import</Button>
+          <Button size="sm" variant="outline" className="flex-1 sm:flex-none"
+            onClick={() => exportRows(picked.length ? guests.filter((g) => picked.includes(g.id)) : filtered)}
+          >
             Export
           </Button>
-          <Button size="sm" onClick={() => setDraft({ name: "", category: "Umum", phone: "", greeting: "" })}>+ Tamu</Button>
+          <Button size="sm" className="flex-1 sm:flex-none" onClick={() => setDraft({ name: "", category: "Umum", phone: "", greeting: "" })}>+ Tamu</Button>
         </div>
       </div>
 
