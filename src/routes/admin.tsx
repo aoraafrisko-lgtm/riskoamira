@@ -354,7 +354,7 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
             <CanvasStage fit="container">
               <InvitationRenderer
                 config={config}
-                ctx={{ editor: true, breakpoint, guestName: "Bapak Andi" }}
+                ctx={{ editor: true, breakpoint, guestName: "Bapak Andi", animPreview }}
                 editorHooks={hooks}
               />
             </CanvasStage>
