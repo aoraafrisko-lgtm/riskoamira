@@ -66,6 +66,7 @@ export type RenderKind =
   | "icon"
   | "shape"
   | "particles"
+  | "open-button"
   | "html";
 
 export interface FieldDefinition {
@@ -200,6 +201,11 @@ const CONTROLS: Record<RenderKind, ControlDef[]> = {
     { key: "variant", label: "Efek", type: "select", options: ["confetti", "sparkle", "petal"] },
     { key: "count", label: "Jumlah", type: "number", min: 5, max: 120 },
   ],
+  "open-button": [
+    { key: "label", label: "Teks Tombol", type: "text" },
+    { key: "caption", label: "Teks Kecil di Atas", type: "text" },
+    { key: "guestPrefix", label: "Sapaan Tamu", type: "text", placeholder: "Kepada" },
+  ],
   html: [{ key: "html", label: "HTML", type: "textarea" }],
 };
 
@@ -236,6 +242,12 @@ const BEHAVIOR: Partial<Record<RenderKind, ControlDef[]>> = {
     { key: "fullWidth", label: "Lebar Penuh", type: "toggle" },
   ],
   image: [{ key: "lightbox", label: "Lightbox", type: "toggle" }],
+  "open-button": [
+    { key: "showGuest", label: "Tampilkan Nama Tamu", type: "toggle" },
+    { key: "shimmer", label: "Efek Kilau", type: "toggle" },
+    { key: "pulse", label: "Efek Denyut", type: "toggle" },
+    { key: "fullWidth", label: "Lebar Penuh", type: "toggle" },
+  ],
 };
 
 export const ANIMATION_EFFECTS = [
@@ -332,6 +344,7 @@ const DEFS: Def[] = [
   { type: "calendar", name: "Calendar", category: "Wedding", description: "Tanggal berbentuk kalender", icon: "Calendar", render: "date", content: { date: "2026-12-12" } },
 
   // ---------- INTERACTIVE ----------
+  { type: "open-invitation", name: "Buka Undangan", category: "Interactive", description: "Tombol pembuka cover (Section 1)", icon: "MailOpen", render: "open-button", content: { label: "Buka Undangan", caption: "Undangan Pernikahan", guestPrefix: "Kepada" }, style: { align: "center", bgColor: "#b08d57", textColor: "#ffffff", radius: 999, fontSize: 15 }, behavior: { showGuest: true, shimmer: true, pulse: true } },
   { type: "button", name: "Button", category: "Interactive", description: "Tombol link", icon: "MousePointerClick", render: "button", content: { label: "Buka Undangan", url: "#" }, behavior: { variant: "solid" } },
   { type: "whatsapp", name: "WhatsApp", category: "Interactive", description: "Chat WhatsApp", icon: "MessageCircle", render: "button", content: { label: "Hubungi via WhatsApp", url: "https://wa.me/628123456789" }, behavior: { variant: "outline", newTab: true } },
   { type: "maps-button", name: "Maps Button", category: "Interactive", description: "Tombol arah lokasi", icon: "Navigation", render: "button", content: { label: "Lihat Lokasi", url: "https://maps.google.com" }, behavior: { variant: "outline", newTab: true } },

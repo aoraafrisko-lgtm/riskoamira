@@ -295,6 +295,9 @@ function FreeCanvas({
 }) {
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const height = sub.canvasHeight ?? 420;
+  // di layout free pun, field yang di-"Rapikan" (free === false) kembali ke alur normal
+  const flowFields = sub.fields.filter((f) => f.free === false);
+  const floatFields = sub.fields.filter((f) => f.free !== false);
 
   return (
     <div
@@ -308,7 +311,14 @@ function FreeCanvas({
         backgroundSize: "20px 20px",
       }}
     >
-      {sub.fields.map((field) => (
+      {flowFields.length ? (
+        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+          {flowFields.map((field) => (
+            <FieldWrap key={field.id} section={section} sub={sub} field={field} editor={editor} hooks={hooks} />
+          ))}
+        </div>
+      ) : null}
+      {floatFields.map((field) => (
         <FreeField
           key={field.id}
           section={section}

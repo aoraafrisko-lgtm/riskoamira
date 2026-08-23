@@ -7,6 +7,8 @@ export interface RenderCtx {
   guestGreeting?: string;
   token?: string;
   breakpoint: "desktop" | "tablet" | "mobile";
+  /** Dipanggil tombol "Buka Undangan" pada cover (Section 1). */
+  onOpenInvitation?: () => void;
 }
 
 export const RenderContext = createContext<RenderCtx>({ editor: false, breakpoint: "desktop" });

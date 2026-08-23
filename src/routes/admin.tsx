@@ -488,11 +488,15 @@ function Toolbar({
   const patchField = (patch: Record<string, unknown>) =>
     commit((c) => T.updateField(c, sel.sectionId, sel.subsectionId!, sel.fieldId!, patch as never));
 
+  const subNode = sel.kind === "field" ? T.findSubsection(config, sel.sectionId, sel.subsectionId) : null;
+  // di layout "free" field bebas secara default, kecuali ditandai free: false (Rapikan)
+  const isFree = fieldNode ? (subNode?.layout === "free" ? fieldNode.free !== false : !!fieldNode.free) : false;
+
   const toggleFree = () => {
     if (!fieldNode) return;
     patchField(
-      fieldNode.free
-        ? { free: false }
+      isFree
+        ? { free: false, pos: undefined }
         : { free: true, pos: { x: 10, y: 20, w: 60, ...(fieldNode.pos ?? {}) } },
     );
   };
@@ -511,7 +515,7 @@ function Toolbar({
 
   return (
     <div className="flex overflow-hidden rounded-md bg-primary shadow">
-      {fieldNode?.free ? (
+      {isFree ? (
         <>
           {btn("◀", () => nudge(-1, 0))}
           {btn("▶", () => nudge(1, 0))}
@@ -526,7 +530,7 @@ function Toolbar({
           {btn("↓", () => move(1))}
         </>
       )}
-      {fieldNode ? btn(fieldNode.free ? "🔒 Rapikan" : "✥ Bebas", toggleFree) : null}
+      {fieldNode ? btn(isFree ? "🔒 Rapikan" : "✥ Bebas", toggleFree) : null}
       {btn("Duplicate", duplicate)}
       {btn(node.hidden ? "Show" : "Hide", toggleHide)}
       {btn("Delete", remove)}
@@ -900,21 +904,19 @@ function SettingsPanel({
                 <span className="text-[11px] font-semibold uppercase text-muted-foreground">
                   Posisi bebas — {breakpoint}
                 </span>
-                {sub?.layout !== "free" && (
-                  <Switch
-                    checked={!!field.free}
-                    onCheckedChange={(v) =>
-                      commit((c) =>
-                        T.updateField(c, selection.sectionId, selection.subsectionId!, selection.fieldId!, {
-                          free: v,
-                          ...(v ? { pos: { x: 10, y: 20, w: 60, ...(field.pos ?? {}) } } : {}),
-                        } as never),
-                      )
-                    }
-                  />
-                )}
+                <Switch
+                  checked={sub?.layout === "free" ? field.free !== false : !!field.free}
+                  onCheckedChange={(v) =>
+                    commit((c) =>
+                      T.updateField(c, selection.sectionId, selection.subsectionId!, selection.fieldId!, {
+                        free: v,
+                        ...(v ? { pos: { x: 10, y: 20, w: 60, ...(field.pos ?? {}) } } : { pos: undefined }),
+                      } as never),
+                    )
+                  }
+                />
               </div>
-              {field.free || sub?.layout === "free" ? (
+              {(sub?.layout === "free" ? field.free !== false : !!field.free) ? (
                 <>
                   <NumRow label="X (%)" value={posEff.x} onChange={(v) => patchPos({ x: v })} />
                   <NumRow label="Y (px)" value={posEff.y} onChange={(v) => patchPos({ y: v })} />
