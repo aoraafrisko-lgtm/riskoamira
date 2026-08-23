@@ -201,6 +201,11 @@ const CONTROLS: Record<RenderKind, ControlDef[]> = {
     { key: "variant", label: "Efek", type: "select", options: ["confetti", "sparkle", "petal"] },
     { key: "count", label: "Jumlah", type: "number", min: 5, max: 120 },
   ],
+  "open-button": [
+    { key: "label", label: "Teks Tombol", type: "text" },
+    { key: "caption", label: "Teks Kecil di Atas", type: "text" },
+    { key: "guestPrefix", label: "Sapaan Tamu", type: "text", placeholder: "Kepada" },
+  ],
   html: [{ key: "html", label: "HTML", type: "textarea" }],
 };
 
