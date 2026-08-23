@@ -798,12 +798,14 @@ function SettingsPanel({
   commit,
   breakpoint,
   code,
+  onPlayAnim,
 }: {
   config: InvitationConfig;
   selection: Selection | null;
   commit: (fn: (c: InvitationConfig) => InvitationConfig) => void;
   breakpoint: Breakpoint;
   code: string;
+  onPlayAnim: (scope?: "selection" | "section") => void;
 }) {
   if (!selection) {
     return (
