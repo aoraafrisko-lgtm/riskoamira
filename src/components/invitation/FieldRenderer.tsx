@@ -978,7 +978,7 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
       data-field-id={field.id}
       style={{
         // untuk tombol "Buka Undangan", warna & radius dipakai tombolnya, bukan wadahnya
-        ...styleToCss(kind === "open-button" ? { ...style, bgColor: undefined, radius: undefined } : style),
+        ...styleToCss(wrapperStyle),
         ...animationCss(field.animation, visible),
         ...(field.hidden ? { display: "none" } : {}),
       }}
