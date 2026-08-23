@@ -977,7 +977,8 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
       ref={ref}
       data-field-id={field.id}
       style={{
-        ...styleToCss(style),
+        // untuk tombol "Buka Undangan", warna & radius dipakai tombolnya, bukan wadahnya
+        ...styleToCss(kind === "open-button" ? { ...style, bgColor: undefined, radius: undefined } : style),
         ...animationCss(field.animation, visible),
         ...(field.hidden ? { display: "none" } : {}),
       }}
