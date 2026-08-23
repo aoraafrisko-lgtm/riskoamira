@@ -346,19 +346,17 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
       <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 gap-1 border-t bg-card/95 p-1.5 backdrop-blur lg:hidden">
         <Button size="sm" variant="outline" className="h-10 text-xs" onClick={() => setSheet("structure")}>Struktur</Button>
         <Button size="sm" variant={selection ? "default" : "outline"} className="h-10 text-xs" onClick={() => setSheet("settings")}>Setting</Button>
-        <Button size="sm" variant="outline" className="h-10 text-xs" onClick={() => setSheet("guests")}>Tamu</Button>
+        <Button size="sm" variant="outline" className="h-10 text-xs" onClick={() => setPanel("guests")}>Tamu</Button>
         <Button size="sm" variant="outline" className="h-10 text-xs" onClick={() => doSave(config)}>Save</Button>
       </div>
 
       <Sheet open={sheet !== null} onOpenChange={(o) => !o && setSheet(null)}>
         <SheetContent side="bottom" className="h-[78dvh] p-0 lg:hidden">
           <SheetHeader className="border-b px-4 py-3">
-            <SheetTitle className="text-base">
-              {sheet === "structure" ? "Struktur" : sheet === "settings" ? "Pengaturan" : "Tamu & RSVP"}
-            </SheetTitle>
+            <SheetTitle className="text-base">{sheet === "structure" ? "Struktur" : "Pengaturan"}</SheetTitle>
           </SheetHeader>
           <ScrollArea className="h-[calc(78dvh-3.5rem)]">
-            {sheet === "structure" ? structureTree : sheet === "settings" ? settingsPanel : sheet === "guests" ? <GuestsPanel code={code} /> : null}
+            {sheet === "structure" ? structureTree : sheet === "settings" ? settingsPanel : null}
           </ScrollArea>
         </SheetContent>
       </Sheet>
