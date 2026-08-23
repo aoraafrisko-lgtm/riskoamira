@@ -32,7 +32,33 @@ type Draft = { id?: string; name: string; category: string; phone: string; greet
 
 const TEMPLATE = "nama,kategori,telepon,sapaan\nBapak Andi,Keluarga,6281234567890,Bapak\nIbu Sari,Teman,,Ibu\n";
 
+const WA_KEY = "wa_message_template";
+const DEFAULT_WA = `Assalamu'alaikum / Salam sejahtera 🌿
+
+Kepada {sapaan} {nama},
+Dengan penuh kebahagiaan, kami mengundang Anda untuk hadir di acara pernikahan kami.
+
+Detail acara & konfirmasi kehadiran dapat dilihat pada undangan digital berikut:
+{link}
+
+Merupakan suatu kehormatan bagi kami apabila {sapaan} {nama} berkenan hadir dan memberikan doa restu.
+
+Terima kasih 🙏`;
+
+const WA_TOKENS = ["{nama}", "{sapaan}", "{kategori}", "{link}", "{token}"];
+
 const guestLink = (token: string) => `${typeof window !== "undefined" ? window.location.origin : ""}/?guest=${token}`;
+
+const fillTemplate = (tpl: string, g: GuestRow) =>
+  tpl
+    .replace(/\{nama\}/g, g.name)
+    .replace(/\{sapaan\}/g, g.greeting ?? "")
+    .replace(/\{kategori\}/g, g.category)
+    .replace(/\{token\}/g, g.token)
+    .replace(/\{link\}/g, guestLink(g.token))
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+
 
 function download(name: string, text: string, mime = "text/csv") {
   const url = URL.createObjectURL(new Blob([text], { type: mime }));
