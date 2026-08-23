@@ -102,6 +102,27 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
   const [dragging, setDragging] = useState(false);
   const [rsvpFilter, setRsvpFilter] = useState<"all" | "yes" | "no">("all");
   const [busy, setBusy] = useState(false);
+  const [waTpl, setWaTpl] = useState(DEFAULT_WA);
+  const [tplOpen, setTplOpen] = useState(false);
+  const [tplDraft, setTplDraft] = useState(DEFAULT_WA);
+
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? window.localStorage.getItem(WA_KEY) : null;
+    if (saved) {
+      setWaTpl(saved);
+      setTplDraft(saved);
+    }
+  }, []);
+
+  const openWa = useCallback(
+    (g: GuestRow) => {
+      const text = encodeURIComponent(fillTemplate(waTpl, g));
+      const phone = (g.phone ?? "").replace(/\D/g, "");
+      window.open(phone ? `https://wa.me/${phone}?text=${text}` : `https://wa.me/?text=${text}`, "_blank");
+    },
+    [waTpl],
+  );
+
 
   const refresh = useCallback(() => {
     load({ data: { code } }).then((d) => setGuests(d as GuestRow[])).catch(() => toast.error("Gagal memuat tamu"));
