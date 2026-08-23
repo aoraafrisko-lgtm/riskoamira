@@ -555,6 +555,62 @@ export function GuestsManager({ code, onBack }: { code: string; onBack?: () => v
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* WA TEMPLATE */}
+      <Sheet open={tplOpen} onOpenChange={(v) => setTplOpen(v)}>
+        <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto sm:max-w-xl sm:side-right">
+          <SheetHeader>
+            <SheetTitle>Template Pesan WhatsApp</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-3 pt-3">
+            <div className="flex flex-wrap gap-1.5">
+              {WA_TOKENS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className="rounded-md border px-2 py-1 text-[11px] hover:bg-accent"
+                  onClick={() => setTplDraft((s) => `${s}${s.endsWith(" ") || !s ? "" : " "}${t}`)}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+            <Textarea rows={12} className="text-xs" value={tplDraft} onChange={(e) => setTplDraft(e.target.value)} />
+            <div className="rounded-lg border bg-muted/50 p-3">
+              <div className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">Pratinjau</div>
+              <div className="whitespace-pre-wrap break-words text-xs">
+                {fillTemplate(
+                  tplDraft,
+                  guests[0] ?? {
+                    id: "-",
+                    name: "Bapak Andi",
+                    token: "contoh123",
+                    category: "Keluarga",
+                    greeting: "Bapak",
+                    phone: "6281234567890",
+                  },
+                )}
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  setWaTpl(tplDraft);
+                  window.localStorage.setItem(WA_KEY, tplDraft);
+                  setTplOpen(false);
+                  toast.success("Template pesan disimpan");
+                }}
+              >
+                Simpan template
+              </Button>
+              <Button variant="outline" onClick={() => setTplDraft(DEFAULT_WA)}>Kembalikan default</Button>
+              <Button variant="ghost" onClick={() => setTplOpen(false)}>Tutup</Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
+
   );
 }
