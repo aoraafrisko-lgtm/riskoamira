@@ -245,7 +245,7 @@ export interface MediaItem {
 
 export const uploadMedia = createServerFn({ method: "POST" })
   .inputValidator(
-    (d: { code: string; fileName: string; base64: string; contentType: string; hash?: string }) => d,
+    (d: { code: string; fileName: string; base64: string; contentType: string; hash?: string | undefined }) => d,
   )
   .handler(async ({ data }) => {
     const db = await assertCode(data.code);

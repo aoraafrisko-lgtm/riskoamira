@@ -582,7 +582,7 @@ export function FontSelect({
   allowInherit = false,
 }: {
   label: string;
-  value?: string;
+  value?: string | undefined;
   onChange: (v: string) => void;
   allowInherit?: boolean;
 }) {
@@ -684,7 +684,7 @@ export function BgControls({
           <select
             className="h-8 w-full rounded-md border bg-background px-2 text-xs"
             value={value.bgSize ?? "cover"}
-            onChange={(e) => onChange({ bgSize: e.target.value as BgConfig["bgSize"] })}
+            onChange={(e) => onChange({ bgSize: e.target.value as NonNullable<BgConfig["bgSize"]> })}
           >
             <option value="cover">cover (crop)</option>
             <option value="contain">contain</option>
@@ -697,7 +697,7 @@ export function BgControls({
           <select
             className="h-8 w-full rounded-md border bg-background px-2 text-xs"
             value={value.bgPosition ?? "center"}
-            onChange={(e) => onChange({ bgPosition: e.target.value as BgConfig["bgPosition"] })}
+            onChange={(e) => onChange({ bgPosition: e.target.value as NonNullable<BgConfig["bgPosition"]> })}
           >
             {POSITIONS.map((p) => (
               <option key={p} value={p}>
