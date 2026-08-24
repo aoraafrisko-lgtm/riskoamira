@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
-import type { AnimationConfig, Breakpoint, FieldNode, StyleConfig } from "./types";
+import { fontFamilyCss } from "./fonts";
+import type { AnimationConfig, BgConfig, Breakpoint, FieldNode, StyleConfig } from "./types";
+
 
 export const mergeStyle = (base: StyleConfig, override?: StyleConfig): StyleConfig => ({
   ...base,
