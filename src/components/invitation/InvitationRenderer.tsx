@@ -3,7 +3,9 @@ import { FieldRenderer } from "./FieldRenderer";
 import { RenderContext, type RenderCtx } from "./render-context";
 import { getDefinition } from "@/lib/builder/registry";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/lib/builder/canvas";
-import { resolvePos, scaleStyle, styleToCss } from "@/lib/builder/style";
+import { bgLayerStyle, resolvePos, scaleStyle, styleToCss } from "@/lib/builder/style";
+import { fontFamilyCss } from "@/lib/builder/fonts";
+
 import type {
   Breakpoint,
   FieldNode,
@@ -43,18 +45,30 @@ const INLINE_KEYS: Record<string, string> = { heading: "text", text: "text", quo
 export function InvitationRenderer({ config, ctx, editorHooks }: Props) {
   const editor = ctx.editor;
   const theme = config.theme ?? {};
+  const themeBg = bgLayerStyle(theme);
 
   return (
     <RenderContext.Provider value={ctx}>
       <div
         style={{
+          position: "relative",
           background: theme.bgColor ?? "#fbf8f4",
           color: theme.textColor ?? "#3b332c",
-          fontFamily: theme.fontBody ?? "inherit",
+          fontFamily: fontFamilyCss(theme.fontBody) ?? "inherit",
           width: CANVAS_WIDTH,
           minHeight: "100%",
         }}
       >
+        {theme.bgImage || theme.bgGradient ? (
+          <div style={{ position: "fixed", inset: 0, zIndex: 0, overflow: "hidden" }}>
+            <div style={themeBg} />
+            {theme.overlay ? (
+              <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${theme.overlay / 100})` }} />
+            ) : null}
+          </div>
+        ) : null}
+        <div style={{ position: "relative", zIndex: 1 }}>
+
         {config.sections.length === 0 && (
           <div style={{ padding: "80px 24px", textAlign: "center", opacity: 0.7 }}>
             {editor ? (
@@ -84,7 +98,9 @@ export function InvitationRenderer({ config, ctx, editorHooks }: Props) {
         {config.sections.map((section) => (
           <SectionView key={section.id} section={section} editor={editor} hooks={editorHooks} theme={theme} ctxBp={ctx.breakpoint} />
         ))}
+        </div>
       </div>
+
     </RenderContext.Provider>
   );
 }
@@ -126,19 +142,22 @@ function SectionView({
         minHeight: CANVAS_HEIGHT,
         maxHeight: CANVAS_HEIGHT,
         overflow: editor ? "visible" : "hidden",
-        backgroundImage: s.bgImage ? `url(${s.bgImage})` : s.bgGradient,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
         opacity: section.hidden ? 0.4 : (s.opacity ?? 1),
         outline: selected ? "2px solid #b08d57" : editor ? "1px dashed rgba(176,141,87,.5)" : undefined,
         outlineOffset: -2,
         cursor: editor ? "pointer" : undefined,
       }}
     >
-      {s.bgImage && s.overlay ? (
-        <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${s.overlay / 100})` }} />
+      {s.bgImage || s.bgGradient ? (
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0 }}>
+          <div style={bgLayerStyle(s)} />
+          {s.overlay ? (
+            <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${s.overlay / 100})` }} />
+          ) : null}
+        </div>
       ) : null}
-      <div style={{ position: "relative", width: "100%", margin: "0 auto" }}>
+      <div style={{ position: "relative", zIndex: 1, width: "100%", margin: "0 auto" }}>
+
         {editor && selected ? <Badge label={section.name} toolbar={hooks?.toolbar?.(sel)} /> : null}
         {section.subsections.map((sub) => (
           <SubsectionView
@@ -218,11 +237,23 @@ function SubsectionView({
         outlineOffset: -2,
       }}
     >
+      {sub.style?.bgImage || sub.style?.bgGradient ? (
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0, borderRadius: sub.style?.radius }}>
+          <div style={bgLayerStyle(sub.style ?? {})} />
+          {sub.style?.overlay ? (
+            <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${sub.style.overlay / 100})` }} />
+          ) : null}
+        </div>
+      ) : null}
       {editor && selected ? <Badge label={sub.name} toolbar={hooks?.toolbar?.(sel)} /> : null}
+
       {free ? (
-        <FreeCanvas section={section} sub={sub} editor={editor} hooks={hooks} bp={ctxBp} />
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <FreeCanvas section={section} sub={sub} editor={editor} hooks={hooks} bp={ctxBp} />
+        </div>
       ) : (
-        <div ref={flowRef} style={{ position: "relative", minHeight: floatMinHeight || undefined }}>
+        <div ref={flowRef} style={{ position: "relative", zIndex: 1, minHeight: floatMinHeight || undefined }}>
+
           <div
             style={{
               display: columns > 1 ? "grid" : "flex",

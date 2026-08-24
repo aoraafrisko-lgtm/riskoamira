@@ -32,8 +32,9 @@ import {
   publishInvitation,
   saveDraftConfig,
   verifyAdminCode,
-  uploadMedia,
 } from "@/lib/invitation.functions";
+import { BgControls, FontSelect, ImageInput } from "@/components/admin/media";
+
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -808,16 +809,30 @@ function SettingsPanel({
   onPlayAnim: (scope?: "selection" | "section") => void;
 }) {
   if (!selection) {
+    const theme = config.theme ?? {};
+    const patchTheme = (patch: Record<string, unknown>) =>
+      commit((c) => ({ ...c, theme: { ...c.theme, ...patch } }));
     return (
       <div className="space-y-4 p-4">
         <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tema Undangan</div>
-        <ColorRow label="Background" value={config.theme.bgColor ?? "#fbf8f4"} onChange={(v) => commit((c) => ({ ...c, theme: { ...c.theme, bgColor: v } }))} />
-        <ColorRow label="Warna Teks" value={config.theme.textColor ?? "#3b332c"} onChange={(v) => commit((c) => ({ ...c, theme: { ...c.theme, textColor: v } }))} />
-        <ColorRow label="Aksen" value={config.theme.accentColor ?? "#b08d57"} onChange={(v) => commit((c) => ({ ...c, theme: { ...c.theme, accentColor: v } }))} />
-        <p className="text-xs text-muted-foreground">Pilih Section, Subsection, atau Field untuk mengatur detailnya.</p>
+        <ColorRow label="Background" value={config.theme.bgColor ?? "#fbf8f4"} onChange={(v) => patchTheme({ bgColor: v })} />
+        <ColorRow label="Warna Teks" value={config.theme.textColor ?? "#3b332c"} onChange={(v) => patchTheme({ textColor: v })} />
+        <ColorRow label="Aksen" value={config.theme.accentColor ?? "#b08d57"} onChange={(v) => patchTheme({ accentColor: v })} />
+        <FontSelect label="Font Judul" value={theme.fontHeading} onChange={(v) => patchTheme({ fontHeading: v })} allowInherit inheritLabel="Default" />
+        <FontSelect label="Font Isi" value={theme.fontBody} onChange={(v) => patchTheme({ fontBody: v })} allowInherit inheritLabel="Default" />
+        <BgControls
+          title="Background Dasar (seluruh undangan)"
+          code={code}
+          value={theme}
+          onChange={(patch) => patchTheme(patch as Record<string, unknown>)}
+        />
+        <p className="text-xs text-muted-foreground">
+          Buat Section/Subsection transparan agar background dasar ini terlihat. Pilih Section, Subsection, atau Field untuk mengatur detailnya.
+        </p>
       </div>
     );
   }
+
 
   const section = T.findSection(config, selection.sectionId);
   const sub = T.findSubsection(config, selection.sectionId, selection.subsectionId);
@@ -968,14 +983,29 @@ function SettingsPanel({
               )}
             </div>
           )}
-          <ColorRow label="Background" value={style.bgColor ?? "#ffffff"} onChange={(v) => patchStyle({ bgColor: v })} />
+          <div className="flex items-center justify-between rounded-md border p-2">
+            <div>
+              <Label className="text-xs">Transparan</Label>
+              <p className="text-[10px] text-muted-foreground">Tampilkan background dasar tema</p>
+            </div>
+            <Switch checked={!!style.transparent} onCheckedChange={(v) => patchStyle({ transparent: v })} />
+          </div>
+          {!style.transparent && (
+            <ColorRow label="Background" value={style.bgColor ?? "#ffffff"} onChange={(v) => patchStyle({ bgColor: v })} />
+          )}
           <ColorRow label="Warna Teks" value={style.textColor ?? "#000000"} onChange={(v) => patchStyle({ textColor: v })} />
-          <FieldInput label="Background Image URL" value={style.bgImage ?? ""} onChange={(v) => patchStyle({ bgImage: v })} />
-          <FieldInput label="Gradient (CSS)" value={style.bgGradient ?? ""} onChange={(v) => patchStyle({ bgGradient: v })} />
+          <BgControls
+            code={code}
+            value={style}
+            onChange={(patch) => patchStyle(patch as StyleConfig)}
+            title={selection.kind === "field" ? "Latar Field" : "Latar & Crop"}
+          />
+          <FontSelect label="Font" value={style.fontFamily} onChange={(v) => patchStyle({ fontFamily: v })} allowInherit />
           <NumRow label="Font Size" value={style.fontSize} onChange={(v) => patchStyle({ fontSize: v })} />
           <NumRow label="Font Weight" value={style.fontWeight} step={100} onChange={(v) => patchStyle({ fontWeight: v })} />
           <NumRow label="Letter Spacing" value={style.letterSpacing} onChange={(v) => patchStyle({ letterSpacing: v })} />
           <SelectRow label="Alignment" value={style.align ?? "left"} options={["left", "center", "right"]} onChange={(v) => patchStyle({ align: v as never })} />
+
           <NumRow label="Padding Y" value={style.paddingY} onChange={(v) => patchStyle({ paddingY: v })} />
           <NumRow label="Padding X" value={style.paddingX} onChange={(v) => patchStyle({ paddingX: v })} />
           <NumRow label="Margin Top" value={style.marginTop} onChange={(v) => patchStyle({ marginTop: v })} />
@@ -987,7 +1017,6 @@ function SettingsPanel({
           <SelectRow label="Shadow" value={style.shadow ?? "none"} options={["none", "sm", "md", "lg", "xl"]} onChange={(v) => patchStyle({ shadow: v as never })} />
           <NumRow label="Opacity (0-1)" value={style.opacity} step={0.1} onChange={(v) => patchStyle({ opacity: v })} />
           <NumRow label="Rotate (deg)" value={style.rotate} onChange={(v) => patchStyle({ rotate: v })} />
-          <NumRow label="Overlay (%)" value={style.overlay} onChange={(v) => patchStyle({ overlay: v })} />
           <NumRow label="Z-Index" value={style.zIndex} onChange={(v) => patchStyle({ zIndex: v })} />
           {selection.kind === "field" && (
             <div className="rounded-md border p-2">
@@ -1164,51 +1193,7 @@ function ControlInput({
   }
 }
 
-function useUpload(code: string) {
-  const upload = useServerFn(uploadMedia);
-  return useCallback(
-    async (file: File) => {
-      const buf = await file.arrayBuffer();
-      let bin = "";
-      new Uint8Array(buf).forEach((b) => (bin += String.fromCharCode(b)));
-      const res = await upload({
-        data: { code, fileName: file.name, base64: btoa(bin), contentType: file.type || "image/jpeg" },
-      });
-      return res.url;
-    },
-    [code, upload],
-  );
-}
-
-function ImageInput({ label, value, onChange, code }: { label: string; value: string; onChange: (v: string) => void; code: string }) {
-  const upload = useUpload(code);
-  const [busy, setBusy] = useState(false);
-  return (
-    <div className="space-y-1">
-      <Label className="text-xs">{label}</Label>
-      <Input className="h-8 text-xs" placeholder="Paste image URL" value={value} onChange={(e) => onChange(e.target.value)} />
-      <input
-        type="file"
-        accept="image/*,video/*,audio/*"
-        className="w-full text-[11px]"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          setBusy(true);
-          upload(file)
-            .then(onChange)
-            .catch(() => toast.error("Upload gagal"))
-            .finally(() => setBusy(false));
-        }}
-      />
-      {busy ? <p className="text-[11px] text-muted-foreground">Mengunggah...</p> : null}
-      {value ? <img src={value} alt="" className="h-16 w-full rounded object-cover" /> : null}
-    </div>
-  );
-}
-
 function PhotosInput({ value, onChange, code }: { value: Photo[]; onChange: (v: Photo[]) => void; code: string }) {
-  const upload = useUpload(code);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
 
   const set = (i: number, patch: Partial<Photo>) => onChange(value.map((p, idx) => (idx === i ? { ...p, ...patch } : p)));
@@ -1248,20 +1233,7 @@ function PhotosInput({ value, onChange, code }: { value: Photo[]; onChange: (v: 
               </button>
             </div>
           </div>
-          <Input className="h-7 text-[11px]" placeholder="Image URL" value={p.url} onChange={(e) => set(i, { url: e.target.value })} />
-          <input
-            type="file"
-            accept="image/*"
-            className="w-full text-[11px]"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              upload(file)
-                .then((url) => set(i, { url }))
-                .catch(() => toast.error("Upload gagal"));
-            }}
-          />
-          {p.url ? <img src={p.url} alt="" className="h-14 w-full rounded object-cover" /> : null}
+          <ImageInput label="Gambar" value={p.url} onChange={(url) => set(i, { url })} code={code} accept="image/*" />
         </div>
       ))}
     </div>

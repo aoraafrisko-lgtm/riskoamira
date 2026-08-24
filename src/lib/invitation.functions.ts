@@ -233,10 +233,29 @@ export const listWishes = createServerFn({ method: "GET" }).handler(async () => 
 
 /* ------------------------- Media ------------------------- */
 
+export interface MediaItem {
+  id: string;
+  url: string;
+  kind: string;
+  label: string | null;
+  size: number | null;
+  content_type: string | null;
+  created_at: string;
+}
+
 export const uploadMedia = createServerFn({ method: "POST" })
-  .inputValidator((d: { code: string; fileName: string; base64: string; contentType: string }) => d)
+  .inputValidator(
+    (d: { code: string; fileName: string; base64: string; contentType: string; hash?: string | undefined }) => d,
+  )
   .handler(async ({ data }) => {
     const db = await assertCode(data.code);
+
+    // Dedup: file dengan sidik jari sama dipakai ulang, tidak diunggah dua kali.
+    if (data.hash) {
+      const { data: existing } = await db.from("media").select("url").eq("hash", data.hash).maybeSingle();
+      if (existing?.url) return { url: existing.url, reused: true };
+    }
+
     const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
     const safe = data.fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
     const path = `${Date.now()}_${safe}`;
@@ -249,6 +268,40 @@ export const uploadMedia = createServerFn({ method: "POST" })
       .from("media")
       .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
     if (signErr || !signed) throw new Error(signErr?.message ?? "Gagal membuat URL");
-    await db.from("media").insert({ url: signed.signedUrl, kind: data.contentType.split("/")[0] ?? "image", label: safe });
-    return { url: signed.signedUrl };
+    await db.from("media").insert({
+      url: signed.signedUrl,
+      kind: data.contentType.split("/")[0] ?? "image",
+      label: safe,
+      hash: data.hash ?? null,
+      size: bytes.length,
+      content_type: data.contentType || null,
+      path,
+    });
+    return { url: signed.signedUrl, reused: false };
   });
+
+export const listMedia = createServerFn({ method: "POST" })
+  .inputValidator((d: { code: string }) => d)
+  .handler(async ({ data }) => {
+    const db = await assertCode(data.code);
+    const { data: rows, error } = await db
+      .from("media")
+      .select("id, url, kind, label, size, content_type, created_at")
+      .order("created_at", { ascending: false })
+      .limit(300);
+    if (error) throw new Error(error.message);
+    return (rows ?? []) as MediaItem[];
+  });
+
+export const deleteMedia = createServerFn({ method: "POST" })
+  .inputValidator((d: { code: string; id: string }) => d)
+  .handler(async ({ data }) => {
+    const db = await assertCode(data.code);
+    const { data: row } = await db.from("media").select("path").eq("id", data.id).maybeSingle();
+    const path = (row as { path?: string | null } | null)?.path;
+    if (path) await db.storage.from("media").remove([path]);
+    const { error } = await db.from("media").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
