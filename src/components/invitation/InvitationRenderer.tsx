@@ -96,7 +96,9 @@ export function InvitationRenderer({ config, ctx, editorHooks }: Props) {
         {config.sections.map((section) => (
           <SectionView key={section.id} section={section} editor={editor} hooks={editorHooks} theme={theme} ctxBp={ctx.breakpoint} />
         ))}
+        </div>
       </div>
+
     </RenderContext.Provider>
   );
 }
