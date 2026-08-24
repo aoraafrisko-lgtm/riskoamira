@@ -33,6 +33,8 @@ import {
   saveDraftConfig,
   verifyAdminCode,
 } from "@/lib/invitation.functions";
+import { BgControls, FontSelect, ImageInput } from "@/components/admin/media";
+
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
