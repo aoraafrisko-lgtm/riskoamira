@@ -3,7 +3,9 @@ import { FieldRenderer } from "./FieldRenderer";
 import { RenderContext, type RenderCtx } from "./render-context";
 import { getDefinition } from "@/lib/builder/registry";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/lib/builder/canvas";
-import { resolvePos, scaleStyle, styleToCss } from "@/lib/builder/style";
+import { bgLayerStyle, resolvePos, scaleStyle, styleToCss } from "@/lib/builder/style";
+import { fontFamilyCss } from "@/lib/builder/fonts";
+
 import type {
   Breakpoint,
   FieldNode,
