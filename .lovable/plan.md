@@ -1,4 +1,4 @@
-# Background Dasar, Transparansi, Crop/Posisi Gambar & Pemilih Font
+# Background Dasar, Transparansi, Crop, Font, Pustaka Media & Remove BG
 
 ## Yang akan ditambahkan
 
@@ -49,3 +49,13 @@ Untuk Tema, Section, dan Subsection:
 - `src/lib/invitation.functions.ts`: `uploadMedia` menerima `sha256` dan mengecek tabel `media` lebih dulu — jika sudah ada, kembalikan URL lama tanpa upload; tambah `listMedia` dan `deleteMedia` (admin-only, lewat service role seperti fungsi lain).
 - Migrasi: tambah kolom `hash text`, `size bigint`, `content_type text` pada `public.media` + indeks unik pada `hash`; tabel tetap tanpa akses klien langsung (diakses hanya via server function).
 
+
+### 7. Hapus Background Gambar (Remove BG)
+- Tombol **Hapus Latar** pada setiap komponen gambar (background tema/section/subsection, field gambar, galeri, pustaka media).
+- Default berjalan **di browser** memakai `@imgly/background-removal` (WASM, tanpa biaya, ~2-5 detik per foto). Hasil disimpan sebagai PNG transparan baru di pustaka media; foto asli tetap utuh.
+- Tombol tambahan **Rapikan dengan AI** untuk foto yang tepinya kurang bagus (rambut, tulle) — memakai Lovable AI image edit lewat server route, memakai kredit AI; tampilkan status dan pesan error apa adanya jika gagal.
+- Pratinjau sebelum/sesudah dengan latar kotak-kotak, plus tombol "Pakai" atau "Batal".
+
+Catatan teknis tambahan:
+- `bun add @imgly/background-removal`; dijalankan hanya di sisi klien (dynamic import) agar tidak masuk bundel SSR.
+- Server route `src/routes/api/remove-bg.ts` (bukan `createServerFn`) untuk jalur AI, memakai `LOVABLE_API_KEY` dan endpoint image edit; hasil base64 diunggah ke pustaka media memakai jalur upload + dedup yang sama.
