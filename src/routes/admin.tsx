@@ -32,7 +32,6 @@ import {
   publishInvitation,
   saveDraftConfig,
   verifyAdminCode,
-  uploadMedia,
 } from "@/lib/invitation.functions";
 
 export const Route = createFileRoute("/admin")({
@@ -1193,7 +1192,6 @@ function ControlInput({
 }
 
 function PhotosInput({ value, onChange, code }: { value: Photo[]; onChange: (v: Photo[]) => void; code: string }) {
-  const upload = useUpload(code);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
 
   const set = (i: number, patch: Partial<Photo>) => onChange(value.map((p, idx) => (idx === i ? { ...p, ...patch } : p)));
@@ -1233,20 +1231,7 @@ function PhotosInput({ value, onChange, code }: { value: Photo[]; onChange: (v: 
               </button>
             </div>
           </div>
-          <Input className="h-7 text-[11px]" placeholder="Image URL" value={p.url} onChange={(e) => set(i, { url: e.target.value })} />
-          <input
-            type="file"
-            accept="image/*"
-            className="w-full text-[11px]"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              upload(file)
-                .then((url) => set(i, { url }))
-                .catch(() => toast.error("Upload gagal"));
-            }}
-          />
-          {p.url ? <img src={p.url} alt="" className="h-14 w-full rounded object-cover" /> : null}
+          <ImageInput label="Gambar" value={p.url} onChange={(url) => set(i, { url })} code={code} accept="image/*" />
         </div>
       ))}
     </div>
