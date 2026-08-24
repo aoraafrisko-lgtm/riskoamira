@@ -120,13 +120,14 @@ export interface SectionNode {
   subsections: SubsectionNode[];
 }
 
-export interface ThemeConfig {
+export interface ThemeConfig extends BgConfig {
   fontHeading?: string;
   fontBody?: string;
   bgColor?: string;
   textColor?: string;
   accentColor?: string;
 }
+
 
 export interface InvitationConfig {
   title?: string;
