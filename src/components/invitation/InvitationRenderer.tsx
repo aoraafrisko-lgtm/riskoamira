@@ -235,7 +235,16 @@ function SubsectionView({
         outlineOffset: -2,
       }}
     >
+      {sub.style?.bgImage || sub.style?.bgGradient ? (
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0, borderRadius: sub.style?.radius }}>
+          <div style={bgLayerStyle(sub.style ?? {})} />
+          {sub.style?.overlay ? (
+            <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${sub.style.overlay / 100})` }} />
+          ) : null}
+        </div>
+      ) : null}
       {editor && selected ? <Badge label={sub.name} toolbar={hooks?.toolbar?.(sel)} /> : null}
+
       {free ? (
         <FreeCanvas section={section} sub={sub} editor={editor} hooks={hooks} bp={ctxBp} />
       ) : (
