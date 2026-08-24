@@ -818,8 +818,8 @@ function SettingsPanel({
         <ColorRow label="Background" value={config.theme.bgColor ?? "#fbf8f4"} onChange={(v) => patchTheme({ bgColor: v })} />
         <ColorRow label="Warna Teks" value={config.theme.textColor ?? "#3b332c"} onChange={(v) => patchTheme({ textColor: v })} />
         <ColorRow label="Aksen" value={config.theme.accentColor ?? "#b08d57"} onChange={(v) => patchTheme({ accentColor: v })} />
-        <FontSelect label="Font Judul" value={theme.fontHeading} onChange={(v) => patchTheme({ fontHeading: v })} />
-        <FontSelect label="Font Isi" value={theme.fontBody} onChange={(v) => patchTheme({ fontBody: v })} />
+        <FontSelect label="Font Judul" value={theme.fontHeading} onChange={(v) => patchTheme({ fontHeading: v })} allowInherit inheritLabel="Default" />
+        <FontSelect label="Font Isi" value={theme.fontBody} onChange={(v) => patchTheme({ fontBody: v })} allowInherit inheritLabel="Default" />
         <BgControls
           title="Background Dasar (seluruh undangan)"
           code={code}

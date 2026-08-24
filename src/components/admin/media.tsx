@@ -580,11 +580,13 @@ export function FontSelect({
   value,
   onChange,
   allowInherit = false,
+  inheritLabel = "Ikuti tema",
 }: {
   label: string;
   value?: string | undefined;
   onChange: (v: string) => void;
   allowInherit?: boolean;
+  inheritLabel?: string;
 }) {
   const current = fontNameFromCss(value);
   const known = FONT_GROUPS.some((g) => g.fonts.includes(current));
@@ -611,7 +613,7 @@ export function FontSelect({
           onChange(v);
         }}
       >
-        {allowInherit ? <option value="">Ikuti tema</option> : null}
+        {allowInherit ? <option value="">{inheritLabel}</option> : null}
         {FONT_GROUPS.map((g) => (
           <optgroup key={g.label} label={g.label}>
             {g.fonts.map((f) => (
