@@ -50,12 +50,14 @@ Untuk Tema, Section, dan Subsection:
 - Migrasi: tambah kolom `hash text`, `size bigint`, `content_type text` pada `public.media` + indeks unik pada `hash`; tabel tetap tanpa akses klien langsung (diakses hanya via server function).
 
 
-### 7. Hapus Background Gambar (Remove BG)
-- Tombol **Hapus Latar** pada setiap komponen gambar (background tema/section/subsection, field gambar, galeri, pustaka media).
-- Default berjalan **di browser** memakai `@imgly/background-removal` (WASM, tanpa biaya, ~2-5 detik per foto). Hasil disimpan sebagai PNG transparan baru di pustaka media; foto asli tetap utuh.
-- Tombol tambahan **Rapikan dengan AI** untuk foto yang tepinya kurang bagus (rambut, tulle) — memakai Lovable AI image edit lewat server route, memakai kredit AI; tampilkan status dan pesan error apa adanya jika gagal.
-- Pratinjau sebelum/sesudah dengan latar kotak-kotak, plus tombol "Pakai" atau "Batal".
+### 7. Hapus Background Gambar (Remove BG) + koreksi manual + border
+- Tombol **Hapus Latar** pada setiap komponen gambar (background tema/section/subsection, field gambar, galeri, pustaka media). Berjalan **di browser** memakai `@imgly/background-removal` (WASM, tanpa biaya, ~2-5 detik per foto). Tanpa AI.
+- **Koreksi manual** setelah proses otomatis: kanvas kecil dengan kuas **Hapus** dan **Pulihkan**, ukuran kuas bisa diatur, plus Undo dan Reset — untuk merapikan sisa latar atau bagian yang terlalu terpotong.
+- Pratinjau sebelum/sesudah dengan latar kotak-kotak (transparansi terlihat), lalu tombol "Pakai" atau "Batal". Hasil disimpan sebagai PNG transparan baru di pustaka media; foto asli tetap utuh.
+- **Border/outline pada objek hasil potong**: setelah latar dihapus, tersedia kontrol **Tebal garis (px)**, **Warna garis**, dan **Halus (feather)** yang menggambar garis tepi mengikuti bentuk objek — bukan kotak. Ada juga opsi **Bayangan halus** agar objek menyatu dengan latar undangan. Semua bisa diubah lagi kapan pun karena tersimpan sebagai pengaturan gambar.
 
 Catatan teknis tambahan:
-- `bun add @imgly/background-removal`; dijalankan hanya di sisi klien (dynamic import) agar tidak masuk bundel SSR.
-- Server route `src/routes/api/remove-bg.ts` (bukan `createServerFn`) untuk jalur AI, memakai `LOVABLE_API_KEY` dan endpoint image edit; hasil base64 diunggah ke pustaka media memakai jalur upload + dedup yang sama.
+- `bun add @imgly/background-removal`; dipanggil lewat dynamic import di sisi klien saja agar tidak masuk bundel SSR.
+- Editor koreksi manual + border memakai `<canvas>`: masker alpha disimpan sebagai layer terpisah; garis tepi dihasilkan dari dilatasi masker alpha (beberapa lapis `drawImage` bergeser + `globalCompositeOperation`), lalu digabung dan diekspor sebagai PNG.
+- Hasil PNG diunggah lewat jalur `uploadMedia` + dedup hash yang sama, jadi gambar yang sudah pernah diproses tidak tersimpan dua kali.
+
