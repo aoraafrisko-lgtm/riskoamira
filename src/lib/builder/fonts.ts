@@ -65,6 +65,6 @@ export const ensureFontLoaded = (name?: string) => {
   loaded.add(clean);
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = googleFontsHref([clean]);
+  link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(clean).replace(/%20/g, "+")}&display=swap`;
   document.head.appendChild(link);
 };
