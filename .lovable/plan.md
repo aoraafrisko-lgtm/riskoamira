@@ -24,15 +24,28 @@ Untuk Tema, Section, dan Subsection:
 - **Rotate** latar 0-360 derajat (rotasi hanya pada lapisan latar, teks tetap tegak).
 - **Offset X / Y (%)** untuk menggeser titik crop secara halus.
 
-### 5. Pemilih Font
-- Muat koleksi font Google (heading & body: Cormorant Garamond, Playfair Display, Great Vibes, Parisienne, Marcellus, Jost, Inter, Lora, Montserrat, Poppins, dan beberapa lain) lewat tag `<link>` di root.
-- Dropdown **Font Heading** dan **Font Body** di panel Tema, dengan pratinjau nama font memakai font itu sendiri.
-- Dropdown **Font Family** di tab Design untuk Section / Subsection / Field, memakai daftar font yang sama plus opsi "Ikuti tema".
+### 5. Pemilih Font (khas undangan) + input manual
+- Daftar dasar font yang umum dipakai undangan pernikahan: Great Vibes, Parisienne, Dancing Script, Pinyon Script, Sacramento, Allura, Italianno, Playfair Display, Cormorant Garamond, EB Garamond, Marcellus, Cinzel, Libre Baskerville, Lora, Jost, Montserrat, Raleway, Quicksand.
+- Semua dimuat lewat tag `<link>` Google Fonts di root route.
+- Dropdown **Font Heading** dan **Font Body** di panel Tema, dengan pratinjau tiap nama font memakai font itu sendiri.
+- Opsi **"Tulis manual..."** pada dropdown: cukup masukkan nama font (mis. `Tangerine`), sistem otomatis memuatnya dari Google Fonts saat itu juga.
+- Dropdown Font Family yang sama tersedia di tab Design untuk Section / Subsection / Field, plus opsi "Ikuti tema".
+
+### 6. Pustaka Media (pakai ulang file yang sudah diupload)
+- Tab/dialog **Pustaka Media** di editor: menampilkan grid semua foto, video, dan audio yang pernah diupload (dari tabel media yang sudah ada), dengan pencarian nama, filter jenis, dan hapus.
+- Setiap komponen upload (background tema/section/subsection, field gambar, galeri foto) mendapat tombol **Pilih dari Pustaka** di samping tombol upload, jadi tidak perlu unggah ulang.
+- **Dedup otomatis**: file yang diupload dihitung sidik jarinya (SHA-256); jika sudah pernah ada, sistem memakai URL yang lama tanpa menyimpan file kedua — hemat penyimpanan dan halaman lebih ringan karena URL yang sama dipakai berulang (di-cache browser).
+- Galeri foto bisa memilih beberapa item dari pustaka sekaligus.
+
 
 ## Detail teknis
 
 - `src/lib/builder/types.ts`: tambah `bgSize`, `bgPosition`, `bgRepeat`, `bgZoom`, `bgRotate`, `bgOffsetX/Y`, `bgOpacity`, `transparent` pada `StyleConfig`; tambah `bgImage`, `bgGradient`, `overlay`, dan properti latar yang sama pada `ThemeConfig`.
 - `src/lib/builder/style.ts`: helper `bgLayerStyle(style)` yang mengubah properti di atas menjadi CSS (`backgroundSize`, `backgroundPosition`, `transform: rotate/scale`), dipakai oleh lapisan latar terpisah.
 - `src/components/invitation/InvitationRenderer.tsx`: render lapisan latar tema di wrapper kanvas; Section & Subsection memakai div lapisan latar absolut (agar rotate/zoom/opacity latar tidak mempengaruhi konten) plus overlay; hormati flag `transparent`.
-- `src/routes/admin.tsx`: pindahkan `ImageInput`/`useUpload` agar bisa dipakai panel Tema dan Design; tambah grup kontrol "Latar & Crop" dan `FontSelect` yang dipakai bersama; daftar font di `src/lib/builder/fonts.ts`.
-- `src/routes/__root.tsx`: tambahkan `<link>` Google Fonts (bukan `@import` di CSS).
+- `src/routes/admin.tsx`: pindahkan `ImageInput`/`useUpload` agar bisa dipakai panel Tema dan Design; tambah grup kontrol "Latar & Crop", `FontSelect` (daftar + mode manual), dan dialog `MediaLibrary`.
+- `src/lib/builder/fonts.ts`: daftar font undangan + helper `googleFontHref(names)` untuk memuat font yang ditulis manual secara dinamis.
+- `src/routes/__root.tsx`: tambahkan `<link>` Google Fonts untuk daftar dasar (bukan `@import` di CSS); font manual disuntik lewat `<link>` runtime.
+- `src/lib/invitation.functions.ts`: `uploadMedia` menerima `sha256` dan mengecek tabel `media` lebih dulu — jika sudah ada, kembalikan URL lama tanpa upload; tambah `listMedia` dan `deleteMedia` (admin-only, lewat service role seperti fungsi lain).
+- Migrasi: tambah kolom `hash text`, `size bigint`, `content_type text` pada `public.media` + indeks unik pada `hash`; tabel tetap tanpa akses klien langsung (diakses hanya via server function).
+
