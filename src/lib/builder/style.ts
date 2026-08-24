@@ -31,12 +31,51 @@ const shadowMap: Record<string, string> = {
   xl: "0 30px 70px rgba(0,0,0,.20)",
 };
 
+const POSITION_MAP: Record<string, string> = {
+  center: "center center",
+  top: "center top",
+  "top-right": "right top",
+  right: "right center",
+  "bottom-right": "right bottom",
+  bottom: "center bottom",
+  "bottom-left": "left bottom",
+  left: "left center",
+  "top-left": "left top",
+};
+
+/**
+ * Gaya untuk lapisan latar terpisah (absolute), agar zoom/rotate/opacity latar
+ * tidak mempengaruhi konten (teks tetap tegak & pekat).
+ */
+export const bgLayerStyle = (s: BgConfig = {}): CSSProperties => {
+  if (!s.bgImage && !s.bgGradient) return {};
+  const zoom = s.bgZoom ?? 1;
+  const rotate = s.bgRotate ?? 0;
+  const ox = s.bgOffsetX ?? 0;
+  const oy = s.bgOffsetY ?? 0;
+  const size =
+    s.bgSize === "contain" ? "contain" : s.bgSize === "fill" ? "100% 100%" : s.bgSize === "repeat" ? "auto" : "cover";
+  return {
+    position: "absolute",
+    inset: 0,
+    backgroundImage: [s.bgImage ? `url(${s.bgImage})` : null, s.bgGradient || null].filter(Boolean).join(", "),
+    backgroundSize: s.bgImage ? size : undefined,
+    backgroundPosition: POSITION_MAP[s.bgPosition ?? "center"] ?? "center center",
+    backgroundRepeat: s.bgSize === "repeat" ? "repeat" : "no-repeat",
+    opacity: s.bgOpacity ?? 1,
+    transform: `translate(${ox}%, ${oy}%) rotate(${rotate}deg) scale(${zoom})`,
+    transformOrigin: "center center",
+    pointerEvents: "none",
+  };
+};
+
 export const styleToCss = (s: StyleConfig = {}): CSSProperties => {
   const css: CSSProperties = {};
-  if (s.bgGradient) css.backgroundImage = s.bgGradient;
-  if (s.bgColor) css.backgroundColor = s.bgColor;
+  if (s.bgColor && !s.transparent) css.backgroundColor = s.bgColor;
+  if (s.transparent) css.backgroundColor = "transparent";
   if (s.textColor) css.color = s.textColor;
-  if (s.fontFamily) css.fontFamily = s.fontFamily;
+  if (s.fontFamily) css.fontFamily = fontFamilyCss(s.fontFamily);
+
   if (s.fontSize) css.fontSize = `${s.fontSize}px`;
   if (s.fontWeight) css.fontWeight = s.fontWeight;
   if (s.letterSpacing !== undefined) css.letterSpacing = `${s.letterSpacing}px`;
