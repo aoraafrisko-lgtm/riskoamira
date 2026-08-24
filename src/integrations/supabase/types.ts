@@ -85,24 +85,36 @@ export type Database = {
       }
       media: {
         Row: {
+          content_type: string | null
           created_at: string
+          hash: string | null
           id: string
           kind: string
           label: string | null
+          path: string | null
+          size: number | null
           url: string
         }
         Insert: {
+          content_type?: string | null
           created_at?: string
+          hash?: string | null
           id?: string
           kind?: string
           label?: string | null
+          path?: string | null
+          size?: number | null
           url: string
         }
         Update: {
+          content_type?: string | null
           created_at?: string
+          hash?: string | null
           id?: string
           kind?: string
           label?: string | null
+          path?: string | null
+          size?: number | null
           url?: string
         }
         Relationships: []
