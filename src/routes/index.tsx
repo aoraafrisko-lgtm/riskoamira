@@ -93,7 +93,7 @@ function PublicInvitation() {
             pointerEvents: closing ? "none" : "auto",
           }}
         >
-          <CanvasStage fit="viewport">
+          <CanvasStage fit="viewport" theme={config.theme}>
             <InvitationRenderer
               config={{ ...config, sections: [cover] }}
               ctx={{ ...baseCtx, onOpenInvitation: open }}
@@ -127,7 +127,7 @@ function PublicInvitation() {
       ) : (
         <div style={{ animation: "inv-open-enter .9s ease both" }}>
           <style>{`@keyframes inv-open-enter { from { opacity:0; transform: translateY(24px) } to { opacity:1; transform:none } }`}</style>
-          <CanvasStage fit="viewport">
+          <CanvasStage fit="viewport" theme={config.theme}>
             <InvitationRenderer config={{ ...config, sections: rest }} ctx={baseCtx} />
           </CanvasStage>
         </div>
