@@ -78,8 +78,7 @@ function PublicInvitation() {
       style={{
         minHeight: "100dvh",
         background: "#141210",
-        overflow: locked ? "hidden" : "auto",
-        height: locked ? "100dvh" : undefined,
+        ...(locked ? { overflow: "hidden", height: "100dvh" } : {}),
       }}
     >
       <h1 className="sr-only">{config.title ?? "Undangan Pernikahan"}</h1>

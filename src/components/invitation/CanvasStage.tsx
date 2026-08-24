@@ -51,13 +51,28 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
   return (
     <div ref={holder} className={className} style={{ width: "100%", height: "100%", position: "relative" }}>
       {hasBg ? (
-        <div style={{ position: "sticky", top: 0, height: 0, zIndex: 0 }} aria-hidden>
+        <div
+          style={{
+            position: fit === "container" ? "absolute" : "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 0,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "flex-start",
+            pointerEvents: "none",
+            overflow: "hidden",
+          }}
+          aria-hidden
+        >
           <div
             style={{
               position: "relative",
               width: CANVAS_WIDTH * scale,
               height: CANVAS_HEIGHT * scale,
-              margin: "0 auto",
+              flex: "0 0 auto",
               overflow: "hidden",
               background: theme?.bgColor ?? undefined,
             }}
