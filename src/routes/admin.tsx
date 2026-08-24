@@ -982,14 +982,29 @@ function SettingsPanel({
               )}
             </div>
           )}
-          <ColorRow label="Background" value={style.bgColor ?? "#ffffff"} onChange={(v) => patchStyle({ bgColor: v })} />
+          <div className="flex items-center justify-between rounded-md border p-2">
+            <div>
+              <Label className="text-xs">Transparan</Label>
+              <p className="text-[10px] text-muted-foreground">Tampilkan background dasar tema</p>
+            </div>
+            <Switch checked={!!style.transparent} onCheckedChange={(v) => patchStyle({ transparent: v })} />
+          </div>
+          {!style.transparent && (
+            <ColorRow label="Background" value={style.bgColor ?? "#ffffff"} onChange={(v) => patchStyle({ bgColor: v })} />
+          )}
           <ColorRow label="Warna Teks" value={style.textColor ?? "#000000"} onChange={(v) => patchStyle({ textColor: v })} />
-          <FieldInput label="Background Image URL" value={style.bgImage ?? ""} onChange={(v) => patchStyle({ bgImage: v })} />
-          <FieldInput label="Gradient (CSS)" value={style.bgGradient ?? ""} onChange={(v) => patchStyle({ bgGradient: v })} />
+          <BgControls
+            code={code}
+            value={style}
+            onChange={(patch) => patchStyle(patch as StyleConfig)}
+            title={selection.kind === "field" ? "Latar Field" : "Latar & Crop"}
+          />
+          <FontSelect label="Font" value={style.fontFamily} onChange={(v) => patchStyle({ fontFamily: v })} allowInherit />
           <NumRow label="Font Size" value={style.fontSize} onChange={(v) => patchStyle({ fontSize: v })} />
           <NumRow label="Font Weight" value={style.fontWeight} step={100} onChange={(v) => patchStyle({ fontWeight: v })} />
           <NumRow label="Letter Spacing" value={style.letterSpacing} onChange={(v) => patchStyle({ letterSpacing: v })} />
           <SelectRow label="Alignment" value={style.align ?? "left"} options={["left", "center", "right"]} onChange={(v) => patchStyle({ align: v as never })} />
+
           <NumRow label="Padding Y" value={style.paddingY} onChange={(v) => patchStyle({ paddingY: v })} />
           <NumRow label="Padding X" value={style.paddingX} onChange={(v) => patchStyle({ paddingX: v })} />
           <NumRow label="Margin Top" value={style.marginTop} onChange={(v) => patchStyle({ marginTop: v })} />
