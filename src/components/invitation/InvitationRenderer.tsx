@@ -43,18 +43,30 @@ const INLINE_KEYS: Record<string, string> = { heading: "text", text: "text", quo
 export function InvitationRenderer({ config, ctx, editorHooks }: Props) {
   const editor = ctx.editor;
   const theme = config.theme ?? {};
+  const themeBg = bgLayerStyle(theme);
 
   return (
     <RenderContext.Provider value={ctx}>
       <div
         style={{
+          position: "relative",
           background: theme.bgColor ?? "#fbf8f4",
           color: theme.textColor ?? "#3b332c",
-          fontFamily: theme.fontBody ?? "inherit",
+          fontFamily: fontFamilyCss(theme.fontBody) ?? "inherit",
           width: CANVAS_WIDTH,
           minHeight: "100%",
         }}
       >
+        {theme.bgImage || theme.bgGradient ? (
+          <div style={{ position: "fixed", inset: 0, zIndex: 0, overflow: "hidden" }}>
+            <div style={themeBg} />
+            {theme.overlay ? (
+              <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${theme.overlay / 100})` }} />
+            ) : null}
+          </div>
+        ) : null}
+        <div style={{ position: "relative", zIndex: 1 }}>
+
         {config.sections.length === 0 && (
           <div style={{ padding: "80px 24px", textAlign: "center", opacity: 0.7 }}>
             {editor ? (
