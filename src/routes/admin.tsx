@@ -1016,7 +1016,6 @@ function SettingsPanel({
           <SelectRow label="Shadow" value={style.shadow ?? "none"} options={["none", "sm", "md", "lg", "xl"]} onChange={(v) => patchStyle({ shadow: v as never })} />
           <NumRow label="Opacity (0-1)" value={style.opacity} step={0.1} onChange={(v) => patchStyle({ opacity: v })} />
           <NumRow label="Rotate (deg)" value={style.rotate} onChange={(v) => patchStyle({ rotate: v })} />
-          <NumRow label="Overlay (%)" value={style.overlay} onChange={(v) => patchStyle({ overlay: v })} />
           <NumRow label="Z-Index" value={style.zIndex} onChange={(v) => patchStyle({ zIndex: v })} />
           {selection.kind === "field" && (
             <div className="rounded-md border p-2">
@@ -1191,49 +1190,6 @@ function ControlInput({
     default:
       return <FieldInput label={ctl.label} value={String(value ?? "")} onChange={onChange} />;
   }
-}
-
-function useUpload(code: string) {
-  const upload = useServerFn(uploadMedia);
-  return useCallback(
-    async (file: File) => {
-      const buf = await file.arrayBuffer();
-      let bin = "";
-      new Uint8Array(buf).forEach((b) => (bin += String.fromCharCode(b)));
-      const res = await upload({
-        data: { code, fileName: file.name, base64: btoa(bin), contentType: file.type || "image/jpeg" },
-      });
-      return res.url;
-    },
-    [code, upload],
-  );
-}
-
-function ImageInput({ label, value, onChange, code }: { label: string; value: string; onChange: (v: string) => void; code: string }) {
-  const upload = useUpload(code);
-  const [busy, setBusy] = useState(false);
-  return (
-    <div className="space-y-1">
-      <Label className="text-xs">{label}</Label>
-      <Input className="h-8 text-xs" placeholder="Paste image URL" value={value} onChange={(e) => onChange(e.target.value)} />
-      <input
-        type="file"
-        accept="image/*,video/*,audio/*"
-        className="w-full text-[11px]"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          setBusy(true);
-          upload(file)
-            .then(onChange)
-            .catch(() => toast.error("Upload gagal"))
-            .finally(() => setBusy(false));
-        }}
-      />
-      {busy ? <p className="text-[11px] text-muted-foreground">Mengunggah...</p> : null}
-      {value ? <img src={value} alt="" className="h-16 w-full rounded object-cover" /> : null}
-    </div>
-  );
 }
 
 function PhotosInput({ value, onChange, code }: { value: Photo[]; onChange: (v: Photo[]) => void; code: string }) {
