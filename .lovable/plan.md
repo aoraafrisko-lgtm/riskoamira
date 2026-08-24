@@ -43,5 +43,9 @@ Untuk Tema, Section, dan Subsection:
 - `src/lib/builder/types.ts`: tambah `bgSize`, `bgPosition`, `bgRepeat`, `bgZoom`, `bgRotate`, `bgOffsetX/Y`, `bgOpacity`, `transparent` pada `StyleConfig`; tambah `bgImage`, `bgGradient`, `overlay`, dan properti latar yang sama pada `ThemeConfig`.
 - `src/lib/builder/style.ts`: helper `bgLayerStyle(style)` yang mengubah properti di atas menjadi CSS (`backgroundSize`, `backgroundPosition`, `transform: rotate/scale`), dipakai oleh lapisan latar terpisah.
 - `src/components/invitation/InvitationRenderer.tsx`: render lapisan latar tema di wrapper kanvas; Section & Subsection memakai div lapisan latar absolut (agar rotate/zoom/opacity latar tidak mempengaruhi konten) plus overlay; hormati flag `transparent`.
-- `src/routes/admin.tsx`: pindahkan `ImageInput`/`useUpload` agar bisa dipakai panel Tema dan Design; tambah grup kontrol "Latar & Crop" dan `FontSelect` yang dipakai bersama; daftar font di `src/lib/builder/fonts.ts`.
-- `src/routes/__root.tsx`: tambahkan `<link>` Google Fonts (bukan `@import` di CSS).
+- `src/routes/admin.tsx`: pindahkan `ImageInput`/`useUpload` agar bisa dipakai panel Tema dan Design; tambah grup kontrol "Latar & Crop", `FontSelect` (daftar + mode manual), dan dialog `MediaLibrary`.
+- `src/lib/builder/fonts.ts`: daftar font undangan + helper `googleFontHref(names)` untuk memuat font yang ditulis manual secara dinamis.
+- `src/routes/__root.tsx`: tambahkan `<link>` Google Fonts untuk daftar dasar (bukan `@import` di CSS); font manual disuntik lewat `<link>` runtime.
+- `src/lib/invitation.functions.ts`: `uploadMedia` menerima `sha256` dan mengecek tabel `media` lebih dulu — jika sudah ada, kembalikan URL lama tanpa upload; tambah `listMedia` dan `deleteMedia` (admin-only, lewat service role seperti fungsi lain).
+- Migrasi: tambah kolom `hash text`, `size bigint`, `content_type text` pada `public.media` + indeks unik pada `hash`; tabel tetap tanpa akses klien langsung (diakses hanya via server function).
+
