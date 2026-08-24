@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/lib/builder/canvas";
 import { bgLayerStyle } from "@/lib/builder/style";
 import type { InvitationConfig } from "@/lib/builder/types";
