@@ -65,7 +65,8 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 0,
+        // Mode viewport: lapisan diportal ke <body>, jadi harus di belakang konten `main`.
+        zIndex: fit === "container" ? 0 : -1,
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
