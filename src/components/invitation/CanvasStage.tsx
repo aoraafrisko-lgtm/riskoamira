@@ -104,8 +104,7 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
     </div>
   ) : null;
 
-    </div>
-  ) : null;
+
 
   return (
     <div ref={holder} className={className} style={{ width: "100%", height: "100%", position: "relative" }}>
