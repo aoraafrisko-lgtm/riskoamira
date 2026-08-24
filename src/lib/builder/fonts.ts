@@ -45,10 +45,15 @@ export const fontNameFromCss = (value?: string) => {
   return first.replace(/['"]/g, "").trim();
 };
 
+const family = (n: string) => {
+  const base = `family=${encodeURIComponent(n).replace(/%20/g, "+")}`;
+  // Font script umumnya hanya punya satu berat; meminta axis wght membuat URL ditolak.
+  return SCRIPT_FONTS.includes(n) ? base : `${base}:wght@300;400;500;600;700`;
+};
+
 export const googleFontsHref = (names: string[]) =>
-  `https://fonts.googleapis.com/css2?${names
-    .map((n) => `family=${encodeURIComponent(n).replace(/%20/g, "+")}:wght@300;400;500;600;700`)
-    .join("&")}&display=swap`;
+  `https://fonts.googleapis.com/css2?${names.map(family).join("&")}&display=swap`;
+
 
 const loaded = new Set<string>();
 
