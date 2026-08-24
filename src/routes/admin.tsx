@@ -285,7 +285,7 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
         <Button className="fixed right-3 top-3 z-50" size="sm" onClick={() => setFullscreen(false)}>
           Tutup
         </Button>
-        <CanvasStage fit="viewport">
+        <CanvasStage fit="viewport" theme={config.theme}>
           <InvitationRenderer config={config} ctx={{ editor: false, breakpoint }} />
         </CanvasStage>
       </div>
@@ -352,7 +352,7 @@ function Editor({ code, onLogout }: { code: string; onLogout: () => void }) {
         {/* PREVIEW */}
         <main className="min-h-0 flex-1 overflow-auto bg-muted/50 p-2 pb-20 sm:p-4 lg:pb-4">
           <div className="mx-auto overflow-hidden rounded-[26px] border bg-background shadow-sm" style={{ maxWidth: 460 }}>
-            <CanvasStage fit="container">
+            <CanvasStage fit="container" theme={config.theme}>
               <InvitationRenderer
                 config={config}
                 ctx={{ editor: true, breakpoint, guestName: "Bapak Andi", animPreview }}
