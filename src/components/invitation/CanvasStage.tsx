@@ -104,7 +104,19 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
           mengacu ke layar (tidak terpengaruh transform/animasi ancestor). */}
       {layer
         ? fit === "container"
-          ? <div style={{ position: "absolute", inset: 0, zIndex: 0, overflow: "hidden" }}>{layer}</div>
+          ? (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 0,
+                  overflow: "hidden",
+                  transform: "translateZ(0)",
+                }}
+              >
+                {layer}
+              </div>
+            )
           : mounted
             ? createPortal(layer, document.body)
             : null
