@@ -53,6 +53,10 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // Latar dasar diskalakan "cover" supaya selalu mengisi penuh tinggi layar/frame
+  // (tanpa pita hitam di layar yang lebih tinggi dari rasio 1080×1920).
+  const layerScale = Math.max(scale, stageHeight / CANVAS_HEIGHT);
+
   const layer = hasBg ? (
     <div
       style={{
@@ -64,7 +68,7 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
         zIndex: 0,
         display: "flex",
         justifyContent: "center",
-        alignItems: "flex-start",
+        alignItems: "center",
         pointerEvents: "none",
         overflow: "hidden",
       }}
@@ -73,8 +77,8 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
       <div
         style={{
           position: "relative",
-          width: CANVAS_WIDTH * scale,
-          height: CANVAS_HEIGHT * scale,
+          width: CANVAS_WIDTH * layerScale,
+          height: CANVAS_HEIGHT * layerScale,
           flex: "0 0 auto",
           overflow: "hidden",
           background: theme?.bgColor ?? undefined,
@@ -87,7 +91,7 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
             left: 0,
             width: CANVAS_WIDTH,
             height: CANVAS_HEIGHT,
-            transform: `scale(${scale})`,
+            transform: `scale(${layerScale})`,
             transformOrigin: "top left",
           }}
         >
@@ -97,6 +101,9 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
           ) : null}
         </div>
       </div>
+    </div>
+  ) : null;
+
     </div>
   ) : null;
 
