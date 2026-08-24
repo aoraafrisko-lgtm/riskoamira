@@ -23,6 +23,7 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
   const inner = useRef<HTMLDivElement | null>(null);
   const [scale, setScale] = useState(0.36);
   const [innerHeight, setInnerHeight] = useState(CANVAS_HEIGHT);
+  const [stageHeight, setStageHeight] = useState(CANVAS_HEIGHT * 0.36);
 
   useEffect(() => {
     const calc = () => {
@@ -32,6 +33,7 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
       const h = fit === "container" ? el.clientHeight || window.innerHeight : window.innerHeight;
       const next = Math.min(w / CANVAS_WIDTH, h / CANVAS_HEIGHT);
       setScale(next > 0 ? next : 0.36);
+      setStageHeight(h > 0 ? h : CANVAS_HEIGHT * 0.36);
       if (inner.current) setInnerHeight(inner.current.scrollHeight || CANVAS_HEIGHT);
     };
     calc();
