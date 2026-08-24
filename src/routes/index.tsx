@@ -77,10 +77,13 @@ function PublicInvitation() {
     <main
       style={{
         minHeight: "100dvh",
-        background: "#141210",
+        // Latar gelap letterbox dirender oleh lapisan tetap di belakang (CanvasStage),
+        // jadi `main` harus transparan supaya lapisan itu terlihat.
+        background: "transparent",
         ...(locked ? { overflow: "hidden", height: "100dvh" } : {}),
       }}
     >
+
       <h1 className="sr-only">{config.title ?? "Undangan Pernikahan"}</h1>
 
       {locked && cover ? (

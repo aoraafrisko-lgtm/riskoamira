@@ -57,7 +57,7 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
   // (tanpa pita hitam di layar yang lebih tinggi dari rasio 1080×1920).
   const layerScale = Math.max(scale, stageHeight / CANVAS_HEIGHT);
 
-  const layer = hasBg ? (
+  const layer = (
     <div
       style={{
         position: "fixed",
@@ -65,44 +65,50 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 0,
+        // Mode viewport: lapisan diportal ke <body>, jadi harus di belakang konten `main`.
+        zIndex: fit === "container" ? 0 : -1,
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         pointerEvents: "none",
         overflow: "hidden",
+        // Warna dasar letterbox ikut di lapisan ini supaya `main` bisa transparan.
+        background: "#141210",
       }}
       aria-hidden
     >
-      <div
-        style={{
-          position: "relative",
-          width: CANVAS_WIDTH * layerScale,
-          height: CANVAS_HEIGHT * layerScale,
-          flex: "0 0 auto",
-          overflow: "hidden",
-          background: theme?.bgColor ?? undefined,
-        }}
-      >
+      {hasBg ? (
         <div
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: CANVAS_WIDTH,
-            height: CANVAS_HEIGHT,
-            transform: `scale(${layerScale})`,
-            transformOrigin: "top left",
+            position: "relative",
+            width: CANVAS_WIDTH * layerScale,
+            height: CANVAS_HEIGHT * layerScale,
+            flex: "0 0 auto",
+            overflow: "hidden",
+            background: theme?.bgColor ?? undefined,
           }}
         >
-          {theme?.bgImage || theme?.bgGradient ? <div style={bgLayerStyle(theme)} /> : null}
-          {theme?.overlay ? (
-            <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${theme.overlay / 100})` }} />
-          ) : null}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: CANVAS_WIDTH,
+              height: CANVAS_HEIGHT,
+              transform: `scale(${layerScale})`,
+              transformOrigin: "top left",
+            }}
+          >
+            {theme?.bgImage || theme?.bgGradient ? <div style={bgLayerStyle(theme)} /> : null}
+            {theme?.overlay ? (
+              <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${theme.overlay / 100})` }} />
+            ) : null}
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
-  ) : null;
+  );
+
 
 
 
