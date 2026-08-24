@@ -1,9 +1,38 @@
 export type Breakpoint = "desktop" | "tablet" | "mobile";
 
-export interface StyleConfig {
-  bgColor?: string;
-  bgGradient?: string;
+export type BgPosition =
+  | "center"
+  | "top"
+  | "top-right"
+  | "right"
+  | "bottom-right"
+  | "bottom"
+  | "bottom-left"
+  | "left"
+  | "top-left";
+
+export interface BgConfig {
   bgImage?: string;
+  bgGradient?: string;
+  /** cover | contain | fill | repeat */
+  bgSize?: "cover" | "contain" | "fill" | "repeat";
+  bgPosition?: BgPosition;
+  /** zoom/skala lapisan latar (1 = normal) */
+  bgZoom?: number;
+  /** rotasi lapisan latar (derajat) */
+  bgRotate?: number;
+  bgOffsetX?: number;
+  bgOffsetY?: number;
+  /** opacity khusus lapisan latar (0-1), tidak mempengaruhi konten */
+  bgOpacity?: number;
+  /** overlay hitam di atas latar (0-100) */
+  overlay?: number;
+}
+
+export interface StyleConfig extends BgConfig {
+  bgColor?: string;
+  /** true = latar dibuat transparan (warna latar diabaikan) */
+  transparent?: boolean;
   textColor?: string;
   fontFamily?: string;
   fontSize?: number;
@@ -24,8 +53,8 @@ export interface StyleConfig {
   opacity?: number;
   rotate?: number;
   zIndex?: number;
-  overlay?: number;
 }
+
 
 export interface AnimationConfig {
   effect?: string;
