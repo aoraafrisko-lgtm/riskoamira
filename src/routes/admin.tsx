@@ -808,16 +808,30 @@ function SettingsPanel({
   onPlayAnim: (scope?: "selection" | "section") => void;
 }) {
   if (!selection) {
+    const theme = config.theme ?? {};
+    const patchTheme = (patch: Record<string, unknown>) =>
+      commit((c) => ({ ...c, theme: { ...c.theme, ...patch } }));
     return (
       <div className="space-y-4 p-4">
         <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tema Undangan</div>
-        <ColorRow label="Background" value={config.theme.bgColor ?? "#fbf8f4"} onChange={(v) => commit((c) => ({ ...c, theme: { ...c.theme, bgColor: v } }))} />
-        <ColorRow label="Warna Teks" value={config.theme.textColor ?? "#3b332c"} onChange={(v) => commit((c) => ({ ...c, theme: { ...c.theme, textColor: v } }))} />
-        <ColorRow label="Aksen" value={config.theme.accentColor ?? "#b08d57"} onChange={(v) => commit((c) => ({ ...c, theme: { ...c.theme, accentColor: v } }))} />
-        <p className="text-xs text-muted-foreground">Pilih Section, Subsection, atau Field untuk mengatur detailnya.</p>
+        <ColorRow label="Background" value={config.theme.bgColor ?? "#fbf8f4"} onChange={(v) => patchTheme({ bgColor: v })} />
+        <ColorRow label="Warna Teks" value={config.theme.textColor ?? "#3b332c"} onChange={(v) => patchTheme({ textColor: v })} />
+        <ColorRow label="Aksen" value={config.theme.accentColor ?? "#b08d57"} onChange={(v) => patchTheme({ accentColor: v })} />
+        <FontSelect label="Font Judul" value={theme.fontHeading} onChange={(v) => patchTheme({ fontHeading: v })} />
+        <FontSelect label="Font Isi" value={theme.fontBody} onChange={(v) => patchTheme({ fontBody: v })} />
+        <BgControls
+          title="Background Dasar (seluruh undangan)"
+          code={code}
+          value={theme}
+          onChange={(patch) => patchTheme(patch as Record<string, unknown>)}
+        />
+        <p className="text-xs text-muted-foreground">
+          Buat Section/Subsection transparan agar background dasar ini terlihat. Pilih Section, Subsection, atau Field untuk mengatur detailnya.
+        </p>
       </div>
     );
   }
+
 
   const section = T.findSection(config, selection.sectionId);
   const sub = T.findSubsection(config, selection.sectionId, selection.subsectionId);
