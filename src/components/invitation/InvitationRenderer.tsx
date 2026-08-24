@@ -246,9 +246,12 @@ function SubsectionView({
       {editor && selected ? <Badge label={sub.name} toolbar={hooks?.toolbar?.(sel)} /> : null}
 
       {free ? (
-        <FreeCanvas section={section} sub={sub} editor={editor} hooks={hooks} bp={ctxBp} />
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <FreeCanvas section={section} sub={sub} editor={editor} hooks={hooks} bp={ctxBp} />
+        </div>
       ) : (
-        <div ref={flowRef} style={{ position: "relative", minHeight: floatMinHeight || undefined }}>
+        <div ref={flowRef} style={{ position: "relative", zIndex: 1, minHeight: floatMinHeight || undefined }}>
+
           <div
             style={{
               display: columns > 1 ? "grid" : "flex",
