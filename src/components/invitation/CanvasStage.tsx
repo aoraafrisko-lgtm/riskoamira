@@ -48,55 +48,67 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
   }, [fit]);
 
   const hasBg = !!(theme?.bgColor || theme?.bgImage || theme?.bgGradient);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const layer = hasBg ? (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 0,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        pointerEvents: "none",
+        overflow: "hidden",
+      }}
+      aria-hidden
+    >
+      <div
+        style={{
+          position: "relative",
+          width: CANVAS_WIDTH * scale,
+          height: CANVAS_HEIGHT * scale,
+          flex: "0 0 auto",
+          overflow: "hidden",
+          background: theme?.bgColor ?? undefined,
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: CANVAS_WIDTH,
+            height: CANVAS_HEIGHT,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
+        >
+          {theme?.bgImage || theme?.bgGradient ? <div style={bgLayerStyle(theme)} /> : null}
+          {theme?.overlay ? (
+            <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${theme.overlay / 100})` }} />
+          ) : null}
+        </div>
+      </div>
+    </div>
+  ) : null;
 
   return (
     <div ref={holder} className={className} style={{ width: "100%", height: "100%", position: "relative" }}>
-      {hasBg ? (
-        <div
-          style={{
-            position: fit === "container" ? "absolute" : "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 0,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "flex-start",
-            pointerEvents: "none",
-            overflow: "hidden",
-          }}
-          aria-hidden
-        >
-          <div
-            style={{
-              position: "relative",
-              width: CANVAS_WIDTH * scale,
-              height: CANVAS_HEIGHT * scale,
-              flex: "0 0 auto",
-              overflow: "hidden",
-              background: theme?.bgColor ?? undefined,
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: CANVAS_WIDTH,
-                height: CANVAS_HEIGHT,
-                transform: `scale(${scale})`,
-                transformOrigin: "top left",
-              }}
-            >
-              {theme?.bgImage || theme?.bgGradient ? <div style={bgLayerStyle(theme)} /> : null}
-              {theme?.overlay ? (
-                <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${theme.overlay / 100})` }} />
-              ) : null}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {/* Mode viewport: lapisan latar diportal ke <body> agar `fixed` benar-benar
+          mengacu ke layar (tidak terpengaruh transform/animasi ancestor). */}
+      {layer
+        ? fit === "container"
+          ? <div style={{ position: "absolute", inset: 0, zIndex: 0, overflow: "hidden" }}>{layer}</div>
+          : mounted
+            ? createPortal(layer, document.body)
+            : null
+        : null}
 
       <div
         style={{
