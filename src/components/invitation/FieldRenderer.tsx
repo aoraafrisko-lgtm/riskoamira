@@ -3,7 +3,7 @@ import QRCode from "qrcode";
 import { useServerFn } from "@tanstack/react-start";
 import { getDefinition } from "@/lib/builder/registry";
 import type { FieldNode, Photo } from "@/lib/builder/types";
-import { animationCss, resolveStyle, scaleStyle, styleToCss } from "@/lib/builder/style";
+import { animationCss, objectPositionCss, resolveStyle, scaleStyle, styleToCss } from "@/lib/builder/style";
 import { useReveal } from "@/lib/builder/use-reveal";
 import { useRenderCtx } from "./render-context";
 import { submitRsvp, listWishes } from "@/lib/invitation.functions";
@@ -452,7 +452,8 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
               width: "100%",
               borderRadius: radius,
               display: "block",
-              objectFit: "cover",
+              objectFit: style.fit ?? "cover",
+              objectPosition: objectPositionCss(style.focal),
               minHeight: style.minHeight,
               animation: field.type === "kenburns" ? "inv-kenburns 12s ease-in-out infinite alternate" : undefined,
             }}
