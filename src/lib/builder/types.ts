@@ -80,6 +80,8 @@ export interface FreePos {
   x?: number; // % of canvas width (left)
   y?: number; // px from canvas top
   w?: number; // % of canvas width
+  /** tinggi tetap (px logis). undefined = tinggi otomatis mengikuti isi */
+  h?: number;
   z?: number;
 }
 
