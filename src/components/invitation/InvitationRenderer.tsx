@@ -357,6 +357,19 @@ function FreeCanvas({
   );
 }
 
+type ResizeDir = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
+
+const HANDLES: { dir: ResizeDir; cursor: string }[] = [
+  { dir: "nw", cursor: "nwse-resize" },
+  { dir: "n", cursor: "ns-resize" },
+  { dir: "ne", cursor: "nesw-resize" },
+  { dir: "e", cursor: "ew-resize" },
+  { dir: "se", cursor: "nwse-resize" },
+  { dir: "s", cursor: "ns-resize" },
+  { dir: "sw", cursor: "nesw-resize" },
+  { dir: "w", cursor: "ew-resize" },
+];
+
 function FreeField({
   section,
   sub,
