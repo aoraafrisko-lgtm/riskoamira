@@ -56,6 +56,9 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
   // Latar dasar diskalakan "cover" supaya selalu mengisi penuh tinggi layar/frame
   // (tanpa pita hitam di layar yang lebih tinggi dari rasio 1080×1920).
   const layerScale = Math.max(scale, stageHeight / CANVAS_HEIGHT);
+  // Bulatkan ke pixel utuh agar tidak ada garis/seam sub-pixel di HP.
+  const layerW = Math.ceil(CANVAS_WIDTH * layerScale);
+  const layerH = Math.ceil(CANVAS_HEIGHT * layerScale);
 
   const layer = (
     <div
@@ -81,33 +84,30 @@ export function CanvasStage({ children, fit = "viewport", theme, className }: Pr
         <div
           style={{
             position: "relative",
-            width: CANVAS_WIDTH * layerScale,
-            height: CANVAS_HEIGHT * layerScale,
+            width: layerW,
+            height: layerH,
             flex: "0 0 auto",
             overflow: "hidden",
             background: theme?.bgColor ?? undefined,
+            // Rasterisasi sendiri = gulir lebih mulus, tanpa repaint tiap frame.
+            transform: "translateZ(0)",
+            backfaceVisibility: "hidden",
+            willChange: "transform",
           }}
         >
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: CANVAS_WIDTH,
-              height: CANVAS_HEIGHT,
-              transform: `scale(${layerScale})`,
-              transformOrigin: "top left",
-            }}
-          >
-            {theme?.bgImage || theme?.bgGradient ? <div style={bgLayerStyle(theme)} /> : null}
-            {theme?.overlay ? (
-              <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${theme.overlay / 100})` }} />
-            ) : null}
-          </div>
+          {theme?.bgImage || theme?.bgGradient ? (
+            // Latar dirender langsung pada ukuran akhir (bukan kanvas 1080 yang
+            // diperkecil transform) supaya gambar tetap tajam di layar HP.
+            <div style={{ ...bgLayerStyle(theme), imageRendering: "auto" }} />
+          ) : null}
+          {theme?.overlay ? (
+            <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${theme.overlay / 100})` }} />
+          ) : null}
         </div>
       ) : null}
     </div>
   );
+
 
 
 

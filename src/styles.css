@@ -194,3 +194,12 @@
   from { opacity: .75; filter: brightness(1) }
   to { opacity: 1; filter: brightness(1.25) }
 }
+
+/* Field mode bebas dengan tinggi tetap: isi mengisi penuh kotak (crop) */
+.inv-fill > [data-field-id] { height: 100%; }
+.inv-fill figure { height: 100%; display: flex; flex-direction: column; }
+.inv-fill figure > img,
+.inv-fill figure > video { flex: 1 1 auto; min-height: 0; height: 100%; }
+.inv-fill > [data-field-id] > img,
+.inv-fill > [data-field-id] > video,
+.inv-fill > [data-field-id] > iframe { height: 100%; }
