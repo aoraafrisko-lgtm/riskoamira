@@ -357,19 +357,6 @@ function FreeCanvas({
   );
 }
 
-type ResizeDir = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
-
-const HANDLES: { dir: ResizeDir; cursor: string }[] = [
-  { dir: "nw", cursor: "nwse-resize" },
-  { dir: "n", cursor: "ns-resize" },
-  { dir: "ne", cursor: "nesw-resize" },
-  { dir: "e", cursor: "ew-resize" },
-  { dir: "se", cursor: "nwse-resize" },
-  { dir: "s", cursor: "ns-resize" },
-  { dir: "sw", cursor: "nesw-resize" },
-  { dir: "w", cursor: "ew-resize" },
-];
-
 function FreeField({
   section,
   sub,
@@ -392,20 +379,6 @@ function FreeField({
   const pos = resolvePos(field, bp);
   const def = getDefinition(field.type);
   const [dragging, setDragging] = useState(false);
-  const [zoom, setZoom] = useState(1);
-
-  // Kompensasi skala kanvas agar handle tetap nyaman ditarik
-  useEffect(() => {
-    if (!editor) return;
-    const calc = () => {
-      const el = canvasRef.current;
-      if (!el || !el.offsetWidth) return;
-      setZoom(el.getBoundingClientRect().width / el.offsetWidth);
-    };
-    calc();
-    window.addEventListener("resize", calc);
-    return () => window.removeEventListener("resize", calc);
-  }, [editor, canvasRef, selected]);
 
   // Nudge dengan tombol panah saat field terpilih (Shift = 10x lebih cepat)
   useEffect(() => {
@@ -434,9 +407,7 @@ function FreeField({
 
   if (field.hidden && !editor) return null;
 
-  const boxRef = useRef<HTMLDivElement | null>(null);
-
-  const startDrag = (e: React.PointerEvent, mode: "move" | ResizeDir) => {
+  const startDrag = (e: React.PointerEvent, mode: "move" | "resize") => {
     if (!editor) return;
     e.preventDefault();
     e.stopPropagation();
@@ -448,51 +419,20 @@ function FreeField({
     const zoom = el.offsetWidth ? rect.width / el.offsetWidth : 1;
     const startX = e.clientX;
     const startY = e.clientY;
-    // tinggi awal: dari nilai tersimpan, atau tinggi terukur saat ini (auto -> tetap)
-    const measuredH = boxRef.current ? Math.round(boxRef.current.offsetHeight) : 80;
-    const base = {
-      ...pos,
-      x: pos.x ?? 0,
-      y: pos.y ?? 0,
-      w: pos.w ?? 40,
-      h: pos.h ?? measuredH,
-    } as FreePos & { x: number; y: number; w: number; h: number };
-    const ratio = base.h > 0 ? base.w / base.h : 1;
+    const base = { ...pos };
     setDragging(true);
     const onMove = (ev: PointerEvent) => {
       const dxPct = ((ev.clientX - startX) / rect.width) * 100;
       const dy = (ev.clientY - startY) / (zoom || 1);
       const snap = ev.shiftKey;
-      let next: FreePos;
-      if (mode === "move") {
-        next = {
-          ...base,
-          h: pos.h, // jangan paksa tinggi tetap saat hanya digeser
-          x: Math.max(-60, Math.min(160, snap ? Math.round((base.x + dxPct) / 5) * 5 : Math.round((base.x + dxPct) * 10) / 10)),
-          y: snap ? Math.round((base.y + dy) / 10) * 10 : Math.round(base.y + dy),
-        };
-      } else {
-        let { x, y, w, h } = base;
-        if (mode.includes("e")) w = base.w + dxPct;
-        if (mode.includes("w")) {
-          w = base.w - dxPct;
-          x = base.x + dxPct;
-        }
-        if (mode.includes("s")) h = base.h + dy;
-        if (mode.includes("n")) {
-          h = base.h - dy;
-          y = base.y + dy;
-        }
-        // Shift di sudut = jaga rasio
-        if (snap && mode.length === 2) {
-          const hFromW = w / (ratio || 1);
-          if (mode.includes("n")) y = base.y + (base.h - hFromW);
-          h = hFromW;
-        }
-        w = Math.max(3, Math.min(200, w));
-        h = Math.max(16, h);
-        next = { ...base, x: Math.round(x * 10) / 10, y: Math.round(y), w: Math.round(w * 10) / 10, h: Math.round(h) };
-      }
+      const next: FreePos =
+        mode === "move"
+          ? {
+              ...base,
+              x: Math.max(-60, Math.min(160, snap ? Math.round((base.x + dxPct) / 5) * 5 : Math.round((base.x + dxPct) * 10) / 10)),
+              y: snap ? Math.round((base.y + dy) / 10) * 10 : Math.round(base.y + dy),
+            }
+          : { ...base, w: Math.max(5, Math.min(200, Math.round(base.w + dxPct))) };
       hooks?.onMovePos?.(sel, next);
     };
     const onUp = () => {
@@ -509,22 +449,16 @@ function FreeField({
     left: `${pos.x}%`,
     top: pos.y,
     width: `${pos.w}%`,
-    ...(pos.h ? { height: pos.h } : {}),
     zIndex: pos.z ?? field.style?.zIndex ?? 1,
     opacity: field.hidden ? 0.4 : 1,
   };
 
-  const inner = (
-    <div
-      ref={boxRef}
-      className={pos.h ? "inv-fill" : undefined}
-      style={pos.h ? { height: "100%", overflow: "hidden" } : undefined}
-    >
-      <FieldRenderer field={field} />
-    </div>
-  );
-
-  if (!editor) return <div style={wrapper}>{inner}</div>;
+  if (!editor)
+    return (
+      <div style={wrapper}>
+        <FieldRenderer field={field} />
+      </div>
+    );
 
   return (
     <div
@@ -545,7 +479,7 @@ function FreeField({
       }}
     >
       {selected ? <Badge label={`✥ ${def?.name ?? field.type}`} toolbar={hooks?.toolbar?.(sel)} /> : null}
-      {inner}
+      <FieldRenderer field={field} />
       {dragging ? (
         <div
           style={{
@@ -562,42 +496,27 @@ function FreeField({
             whiteSpace: "nowrap",
           }}
         >
-          x {pos.x}% · y {pos.y}px · w {pos.w}% · h {pos.h ? `${pos.h}px` : "auto"}
+          x {pos.x}% · y {pos.y}px · w {pos.w}%
         </div>
       ) : null}
-      {selected
-        ? HANDLES.map((h) => {
-            const size = Math.round(16 / (zoom || 1));
-            const off = -Math.round(size / 2);
-            const style: React.CSSProperties = {
-              position: "absolute",
-              width: h.dir === "n" || h.dir === "s" ? "34%" : size,
-              height: h.dir === "e" || h.dir === "w" ? "34%" : size,
-              minWidth: size,
-              minHeight: size,
-              borderRadius: h.dir.length === 2 ? Math.max(3, size / 4) : size,
-              border: `${Math.max(1, Math.round(2 / (zoom || 1)))}px solid #fff`,
-              background: "#b08d57",
-              boxShadow: "0 1px 4px rgba(0,0,0,.3)",
-              cursor: h.cursor,
-              touchAction: "none",
-              zIndex: 32,
-            };
-            if (h.dir.includes("n")) style.top = off;
-            if (h.dir.includes("s")) style.bottom = off;
-            if (h.dir.includes("w")) style.left = off;
-            if (h.dir.includes("e")) style.right = off;
-            if (h.dir === "n" || h.dir === "s") {
-              style.left = "50%";
-              style.transform = "translateX(-50%)";
-            }
-            if (h.dir === "e" || h.dir === "w") {
-              style.top = "50%";
-              style.transform = "translateY(-50%)";
-            }
-            return <div key={h.dir} onPointerDown={(e) => startDrag(e, h.dir)} style={style} />;
-          })
-        : null}
+      {selected ? (
+        <div
+          onPointerDown={(e) => startDrag(e, "resize")}
+          style={{
+            position: "absolute",
+            right: -9,
+            bottom: -9,
+            width: 18,
+            height: 18,
+            borderRadius: 5,
+            border: "2px solid #fff",
+            background: "#b08d57",
+            cursor: "ew-resize",
+            touchAction: "none",
+            zIndex: 32,
+          }}
+        />
+      ) : null}
     </div>
   );
 }
