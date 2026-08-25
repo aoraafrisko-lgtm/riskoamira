@@ -970,10 +970,32 @@ function SettingsPanel({
                   <NumRow label="X (%)" value={posEff.x} onChange={(v) => patchPos({ x: v })} />
                   <NumRow label="Y (px)" value={posEff.y} onChange={(v) => patchPos({ y: v })} />
                   <NumRow label="Lebar (%)" value={posEff.w} onChange={(v) => patchPos({ w: v })} />
+                  <NumRow label="Tinggi (px)" value={posEff.h} step={5} onChange={(v) => patchPos({ h: v })} />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 w-full text-[11px]"
+                    onClick={() => patchPos({ h: undefined })}
+                  >
+                    Tinggi Otomatis
+                  </Button>
                   <NumRow label="Layer (z)" value={posEff.z} onChange={(v) => patchPos({ z: v })} />
+                  <SelectRow
+                    label="Isi Gambar"
+                    value={style.fit ?? "cover"}
+                    options={["cover", "contain", "fill"]}
+                    onChange={(v) => patchStyle({ fit: v as never })}
+                  />
+                  <SelectRow
+                    label="Fokus Crop"
+                    value={style.focal ?? "center"}
+                    options={["center", "top", "top-right", "right", "bottom-right", "bottom", "bottom-left", "left", "top-left"]}
+                    onChange={(v) => patchStyle({ focal: v as never })}
+                  />
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    Drag field di preview ke mana pun (boleh menimpa teks lain). Tombol panah = geser halus,
-                    Shift+drag = snap, titik emas = ubah lebar.
+                    Drag field ke mana pun; 8 titik emas di tepinya untuk resize/crop dari sisi kiri, kanan,
+                    atas, atau bawah. Shift+drag sudut = jaga rasio, Shift+drag badan = snap grid.
                   </p>
                 </>
               ) : (
