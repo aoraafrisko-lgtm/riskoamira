@@ -392,6 +392,20 @@ function FreeField({
   const pos = resolvePos(field, bp);
   const def = getDefinition(field.type);
   const [dragging, setDragging] = useState(false);
+  const [zoom, setZoom] = useState(1);
+
+  // Kompensasi skala kanvas agar handle tetap nyaman ditarik
+  useEffect(() => {
+    if (!editor) return;
+    const calc = () => {
+      const el = canvasRef.current;
+      if (!el || !el.offsetWidth) return;
+      setZoom(el.getBoundingClientRect().width / el.offsetWidth);
+    };
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, [editor, canvasRef, selected]);
 
   // Nudge dengan tombol panah saat field terpilih (Shift = 10x lebih cepat)
   useEffect(() => {
