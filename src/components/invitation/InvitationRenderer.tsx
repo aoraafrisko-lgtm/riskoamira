@@ -535,27 +535,42 @@ function FreeField({
             whiteSpace: "nowrap",
           }}
         >
-          x {pos.x}% · y {pos.y}px · w {pos.w}%
+          x {pos.x}% · y {pos.y}px · w {pos.w}% · h {pos.h ? `${pos.h}px` : "auto"}
         </div>
       ) : null}
-      {selected ? (
-        <div
-          onPointerDown={(e) => startDrag(e, "resize")}
-          style={{
-            position: "absolute",
-            right: -9,
-            bottom: -9,
-            width: 18,
-            height: 18,
-            borderRadius: 5,
-            border: "2px solid #fff",
-            background: "#b08d57",
-            cursor: "ew-resize",
-            touchAction: "none",
-            zIndex: 32,
-          }}
-        />
-      ) : null}
+      {selected
+        ? HANDLES.map((h) => {
+            const size = Math.round(16 / (zoom || 1));
+            const off = -Math.round(size / 2);
+            const style: React.CSSProperties = {
+              position: "absolute",
+              width: h.dir === "n" || h.dir === "s" ? "34%" : size,
+              height: h.dir === "e" || h.dir === "w" ? "34%" : size,
+              minWidth: size,
+              minHeight: size,
+              borderRadius: h.dir.length === 2 ? Math.max(3, size / 4) : size,
+              border: `${Math.max(1, Math.round(2 / (zoom || 1)))}px solid #fff`,
+              background: "#b08d57",
+              boxShadow: "0 1px 4px rgba(0,0,0,.3)",
+              cursor: h.cursor,
+              touchAction: "none",
+              zIndex: 32,
+            };
+            if (h.dir.includes("n")) style.top = off;
+            if (h.dir.includes("s")) style.bottom = off;
+            if (h.dir.includes("w")) style.left = off;
+            if (h.dir.includes("e")) style.right = off;
+            if (h.dir === "n" || h.dir === "s") {
+              style.left = "50%";
+              style.transform = "translateX(-50%)";
+            }
+            if (h.dir === "e" || h.dir === "w") {
+              style.top = "50%";
+              style.transform = "translateY(-50%)";
+            }
+            return <div key={h.dir} onPointerDown={(e) => startDrag(e, h.dir)} style={style} />;
+          })
+        : null}
     </div>
   );
 }
