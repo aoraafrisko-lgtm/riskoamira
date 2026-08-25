@@ -53,6 +53,10 @@ export interface StyleConfig extends BgConfig {
   opacity?: number;
   rotate?: number;
   zIndex?: number;
+  /** cara gambar mengisi kotak: cover = crop, contain = muat utuh, fill = boleh melar */
+  fit?: "cover" | "contain" | "fill";
+  /** titik fokus crop gambar */
+  focal?: BgPosition;
 }
 
 
