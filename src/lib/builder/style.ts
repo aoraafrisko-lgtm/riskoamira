@@ -45,6 +45,9 @@ const POSITION_MAP: Record<string, string> = {
   "top-left": "left top",
 };
 
+/** objectPosition untuk gambar (titik fokus crop). */
+export const objectPositionCss = (p?: string) => POSITION_MAP[p ?? "center"] ?? "center center";
+
 /**
  * Gaya untuk lapisan latar terpisah (absolute), agar zoom/rotate/opacity latar
  * tidak mempengaruhi konten (teks tetap tegak & pekat).
