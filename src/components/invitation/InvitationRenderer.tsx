@@ -518,7 +518,7 @@ function FreeField({
       }}
     >
       {selected ? <Badge label={`✥ ${def?.name ?? field.type}`} toolbar={hooks?.toolbar?.(sel)} /> : null}
-      <FieldRenderer field={field} />
+      {inner}
       {dragging ? (
         <div
           style={{
