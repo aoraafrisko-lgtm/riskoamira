@@ -85,7 +85,7 @@ export interface FreePos {
   y?: number; // px from canvas top
   w?: number; // % of canvas width
   /** tinggi tetap (px logis). undefined = tinggi otomatis mengikuti isi */
-  h?: number;
+  h?: number | undefined;
   z?: number;
 }
 

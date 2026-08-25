@@ -450,13 +450,13 @@ function FreeField({
     const startY = e.clientY;
     // tinggi awal: dari nilai tersimpan, atau tinggi terukur saat ini (auto -> tetap)
     const measuredH = boxRef.current ? Math.round(boxRef.current.offsetHeight) : 80;
-    const base: Required<Pick<FreePos, "x" | "y" | "w" | "h">> & FreePos = {
+    const base = {
       ...pos,
       x: pos.x ?? 0,
       y: pos.y ?? 0,
       w: pos.w ?? 40,
       h: pos.h ?? measuredH,
-    };
+    } as FreePos & { x: number; y: number; w: number; h: number };
     const ratio = base.h > 0 ? base.w / base.h : 1;
     setDragging(true);
     const onMove = (ev: PointerEvent) => {
