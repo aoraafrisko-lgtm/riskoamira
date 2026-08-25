@@ -407,7 +407,9 @@ function FreeField({
 
   if (field.hidden && !editor) return null;
 
-  const startDrag = (e: React.PointerEvent, mode: "move" | "resize") => {
+  const boxRef = useRef<HTMLDivElement | null>(null);
+
+  const startDrag = (e: React.PointerEvent, mode: "move" | ResizeDir) => {
     if (!editor) return;
     e.preventDefault();
     e.stopPropagation();
@@ -419,20 +421,51 @@ function FreeField({
     const zoom = el.offsetWidth ? rect.width / el.offsetWidth : 1;
     const startX = e.clientX;
     const startY = e.clientY;
-    const base = { ...pos };
+    // tinggi awal: dari nilai tersimpan, atau tinggi terukur saat ini (auto -> tetap)
+    const measuredH = boxRef.current ? Math.round(boxRef.current.offsetHeight) : 80;
+    const base: Required<Pick<FreePos, "x" | "y" | "w" | "h">> & FreePos = {
+      ...pos,
+      x: pos.x ?? 0,
+      y: pos.y ?? 0,
+      w: pos.w ?? 40,
+      h: pos.h ?? measuredH,
+    };
+    const ratio = base.h > 0 ? base.w / base.h : 1;
     setDragging(true);
     const onMove = (ev: PointerEvent) => {
       const dxPct = ((ev.clientX - startX) / rect.width) * 100;
       const dy = (ev.clientY - startY) / (zoom || 1);
       const snap = ev.shiftKey;
-      const next: FreePos =
-        mode === "move"
-          ? {
-              ...base,
-              x: Math.max(-60, Math.min(160, snap ? Math.round((base.x + dxPct) / 5) * 5 : Math.round((base.x + dxPct) * 10) / 10)),
-              y: snap ? Math.round((base.y + dy) / 10) * 10 : Math.round(base.y + dy),
-            }
-          : { ...base, w: Math.max(5, Math.min(200, Math.round(base.w + dxPct))) };
+      let next: FreePos;
+      if (mode === "move") {
+        next = {
+          ...base,
+          h: pos.h, // jangan paksa tinggi tetap saat hanya digeser
+          x: Math.max(-60, Math.min(160, snap ? Math.round((base.x + dxPct) / 5) * 5 : Math.round((base.x + dxPct) * 10) / 10)),
+          y: snap ? Math.round((base.y + dy) / 10) * 10 : Math.round(base.y + dy),
+        };
+      } else {
+        let { x, y, w, h } = base;
+        if (mode.includes("e")) w = base.w + dxPct;
+        if (mode.includes("w")) {
+          w = base.w - dxPct;
+          x = base.x + dxPct;
+        }
+        if (mode.includes("s")) h = base.h + dy;
+        if (mode.includes("n")) {
+          h = base.h - dy;
+          y = base.y + dy;
+        }
+        // Shift di sudut = jaga rasio
+        if (snap && mode.length === 2) {
+          const hFromW = w / (ratio || 1);
+          if (mode.includes("n")) y = base.y + (base.h - hFromW);
+          h = hFromW;
+        }
+        w = Math.max(3, Math.min(200, w));
+        h = Math.max(16, h);
+        next = { ...base, x: Math.round(x * 10) / 10, y: Math.round(y), w: Math.round(w * 10) / 10, h: Math.round(h) };
+      }
       hooks?.onMovePos?.(sel, next);
     };
     const onUp = () => {
@@ -449,6 +482,7 @@ function FreeField({
     left: `${pos.x}%`,
     top: pos.y,
     width: `${pos.w}%`,
+    ...(pos.h ? { height: pos.h, overflow: "hidden" } : {}),
     zIndex: pos.z ?? field.style?.zIndex ?? 1,
     opacity: field.hidden ? 0.4 : 1,
   };
