@@ -487,12 +487,17 @@ function FreeField({
     opacity: field.hidden ? 0.4 : 1,
   };
 
-  if (!editor)
-    return (
-      <div style={wrapper}>
-        <FieldRenderer field={field} />
-      </div>
-    );
+  const inner = (
+    <div
+      ref={boxRef}
+      className={pos.h ? "inv-fill" : undefined}
+      style={pos.h ? { height: "100%", overflow: "hidden" } : undefined}
+    >
+      <FieldRenderer field={field} />
+    </div>
+  );
+
+  if (!editor) return <div style={wrapper}>{inner}</div>;
 
   return (
     <div
