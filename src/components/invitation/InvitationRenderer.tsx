@@ -482,7 +482,7 @@ function FreeField({
     left: `${pos.x}%`,
     top: pos.y,
     width: `${pos.w}%`,
-    ...(pos.h ? { height: pos.h, overflow: "hidden" } : {}),
+    ...(pos.h ? { height: pos.h } : {}),
     zIndex: pos.z ?? field.style?.zIndex ?? 1,
     opacity: field.hidden ? 0.4 : 1,
   };
