@@ -52,7 +52,17 @@ export const objectPositionCss = (p?: string) => POSITION_MAP[p ?? "center"] ?? 
  * Gaya untuk lapisan latar terpisah (absolute), agar zoom/rotate/opacity latar
  * tidak mempengaruhi konten (teks tetap tegak & pekat).
  */
-export const bgLayerStyle = (s: BgConfig = {}): CSSProperties => {
+export const hasBgLayer = (s: StyleConfig = {}) => !s.transparent && !!(s.bgImage || s.bgGradient);
+
+/** true = elemen tidak boleh menggambar latar apa pun (background dasar tema harus terlihat). */
+export const isTransparent = (s: StyleConfig = {}) => !!s.transparent;
+
+/** Warna latar efektif untuk komponen yang punya warna sendiri (tombol, shape, dll). */
+export const solidBg = (s: StyleConfig = {}, fallback: string) =>
+  s.transparent ? "transparent" : (s.bgColor ?? fallback);
+
+export const bgLayerStyle = (s: BgConfig & { transparent?: boolean } = {}): CSSProperties => {
+  if (s.transparent) return { display: "none" };
   if (!s.bgImage && !s.bgGradient) return {};
   const zoom = s.bgZoom ?? 1;
   const rotate = s.bgRotate ?? 0;

@@ -3,7 +3,7 @@ import { FieldRenderer } from "./FieldRenderer";
 import { RenderContext, type RenderCtx } from "./render-context";
 import { getDefinition } from "@/lib/builder/registry";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/lib/builder/canvas";
-import { bgLayerStyle, resolvePos, scaleStyle, styleToCss } from "@/lib/builder/style";
+import { bgLayerStyle, hasBgLayer, resolvePos, scaleStyle, styleToCss } from "@/lib/builder/style";
 import { fontFamilyCss } from "@/lib/builder/fonts";
 
 import type {
@@ -140,7 +140,7 @@ function SectionView({
         cursor: editor ? "pointer" : undefined,
       }}
     >
-      {s.bgImage || s.bgGradient ? (
+      {hasBgLayer(s) ? (
         <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0 }}>
           <div style={bgLayerStyle(s)} />
           {s.overlay ? (
@@ -229,7 +229,7 @@ function SubsectionView({
         outlineOffset: -2,
       }}
     >
-      {sub.style?.bgImage || sub.style?.bgGradient ? (
+      {hasBgLayer(sub.style ?? {}) ? (
         <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0, borderRadius: sub.style?.radius }}>
           <div style={bgLayerStyle(sub.style ?? {})} />
           {sub.style?.overlay ? (

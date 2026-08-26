@@ -3,7 +3,7 @@ import QRCode from "qrcode";
 import { useServerFn } from "@tanstack/react-start";
 import { getDefinition } from "@/lib/builder/registry";
 import type { FieldNode, Photo } from "@/lib/builder/types";
-import { animationCss, objectPositionCss, resolveStyle, scaleStyle, styleToCss } from "@/lib/builder/style";
+import { animationCss, bgLayerStyle, hasBgLayer, objectPositionCss, resolveStyle, scaleStyle, solidBg, styleToCss } from "@/lib/builder/style";
 import { useReveal } from "@/lib/builder/use-reveal";
 import { useRenderCtx } from "./render-context";
 import { submitRsvp, listWishes } from "@/lib/invitation.functions";
@@ -518,7 +518,7 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
             <div
               key={p.id}
               style={{
-                background: "#fff",
+                background: style.transparent ? "transparent" : (style.bgColor ?? "#fff"),
                 padding: "10px 10px 30px",
                 boxShadow: "0 10px 24px rgba(0,0,0,.15)",
                 transform: `rotate(${i % 2 ? 2.5 : -2.5}deg)`,
@@ -764,6 +764,7 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
       );
       break;
     case "open-button": {
+      const transparentBtn = !!style.transparent;
       const bg = style.bgColor ?? "#b08d57";
       const fg = style.textColor ?? "#ffffff";
       const anims = [
@@ -802,11 +803,11 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
               width: asBool(b["fullWidth"]) ? "100%" : undefined,
               marginTop: 6,
               padding: "13px 30px",
-              border: `1px solid ${bg}`,
+              border: `1px solid ${transparentBtn ? "currentColor" : bg}`,
               borderRadius: style.radius ?? 999,
-              background: `linear-gradient(100deg, ${bg} 0%, ${fg}55 50%, ${bg} 100%)`,
+              background: transparentBtn ? "transparent" : `linear-gradient(100deg, ${bg} 0%, ${fg}55 50%, ${bg} 100%)`,
               backgroundSize: "220% 100%",
-              color: fg,
+              color: transparentBtn ? "inherit" : fg,
               fontSize: style.fontSize ?? 15,
               letterSpacing: 1.6,
               textTransform: "uppercase",
@@ -835,11 +836,11 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
             fontSize: 14,
             textDecoration: "none",
             border: variant === "ghost" ? "none" : "1px solid currentColor",
-            background: variant === "solid" ? "currentColor" : "transparent",
+            background: variant === "solid" && !style.transparent ? "currentColor" : "transparent",
             color: "inherit",
           }}
         >
-          <span style={variant === "solid" ? { filter: "invert(1) grayscale(1) contrast(9)" } : undefined}>
+          <span style={variant === "solid" && !style.transparent ? { filter: "invert(1) grayscale(1) contrast(9)" } : undefined}>
             {asString(c["label"], "Tombol")}
           </span>
         </a>
@@ -937,7 +938,7 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
             width: v === "line" ? size : size,
             height: v === "line" ? 1 : size,
             borderRadius: v === "circle" ? 999 : v === "line" ? 0 : radius,
-            background: style.bgColor ?? "currentColor",
+            background: solidBg(style, "currentColor"),
             margin: "0 auto",
             opacity: style.opacity ?? 0.8,
           }}
@@ -989,12 +990,21 @@ export function FieldRenderer({ field }: { field: FieldNode }) {
       data-field-id={field.id}
       style={{
         // untuk tombol "Buka Undangan", warna & radius dipakai tombolnya, bukan wadahnya
+        position: hasBgLayer(wrapperStyle) ? "relative" : undefined,
         ...styleToCss(wrapperStyle),
         ...animationCss(field.animation, visible),
         ...(field.hidden ? { display: "none" } : {}),
       }}
     >
-      {body}
+      {hasBgLayer(wrapperStyle) ? (
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0, borderRadius: wrapperStyle.radius }}>
+          <div style={bgLayerStyle(wrapperStyle)} />
+          {wrapperStyle.overlay ? (
+            <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${wrapperStyle.overlay / 100})` }} />
+          ) : null}
+        </div>
+      ) : null}
+      <div style={hasBgLayer(wrapperStyle) ? { position: "relative", zIndex: 1 } : undefined}>{body}</div>
     </div>
   );
 }
