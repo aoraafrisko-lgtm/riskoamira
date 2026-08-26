@@ -2,7 +2,7 @@
   "meta": {
     "name": "Wedding Weaver",
     "package": "@ws-yvvnm447dhiwekcgd29v/dce8dc80-49fe-4dc3-a1f2-5b8b7af1e19b",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "framework": "react",
     "css_framework": "tailwind",
     "starter_template": "custom_design_system_tailwind",
@@ -13,6 +13,7 @@
     "source_manifest": {
       "#enrichment": "ccd27752a9a0b780b6a3c066e328294a36b8035f6feae463bdfb19deba7dfe16",
       ".gitignore": "6d9e901a692b46a83707c245fb03bc91",
+      ".lovable/meta.yaml": "954a981e8847ec1692669dbb04ae9ae9",
       ".lovable/plan/background-dasar-global-yang-fixed-ukuran-1-section-2026-08-24.md": "25d2931f43b7f66f173b8e4a7b9a0e45",
       ".lovable/plan/background-dasar-transparansi-crop-font-pustaka-media-remove-2026-08-24.md": "29c705a9fdcbe8ae454166c82d90edfc",
       ".lovable/plan/cover-opening-navigasi-section-manajemen-tamu-2026-08-22.md": "aa81d772ec958f5f70376c9d50b4a2ba",
@@ -25,6 +26,7 @@
       ".lovable/plan/perbaikan-urutan-lapisan-latar-dasar-harus-di-belakang-secti-2026-08-24.md": "ae7fb64301dd5b34241db03170f5f281",
       ".lovable/plan/resize-crop-interaktif-langsung-di-objek-2026-08-25.md": "33a13b2b96e98a37256ba1d5375bd410",
       ".lovable/project.json": "3e32e4d335d079c605501e2f8fd42539",
+      ".lovable/sources.yaml": "f39f708c65f19e1a4add806fe3098f6d",
       ".prettierignore": "7279a476f196a2da5f7edd18db568dc6",
       ".prettierrc": "185ef0234746ab738ac1ab6cec5e2bd9",
       "AGENTS.md": "3da3c4cd15b686e79a248c25735d6aaf",
@@ -90,6 +92,7 @@
       "src/components/ui/tooltip.tsx": "67d71db5a1ab935695d1def497f5b8a6",
       "src/hooks/use-mobile.tsx": "c0a0bdd4638c391a1dd06ac82074e60b",
       "src/hooks/use-viewport-breakpoint.ts": "549edaba6cb417c5cbe72fcd07087984",
+      "src/index.ts": "f3cf38a69f2983be409d32c2db646c87",
       "src/integrations/supabase/auth-attacher.ts": "dad043cda134d909e52de0346c16625e",
       "src/integrations/supabase/auth-middleware.ts": "5d9d831f79177b7c6327cbd794a97367",
       "src/integrations/supabase/client.server.ts": "23f838ab7633e0a97e695f3c500d91aa",
