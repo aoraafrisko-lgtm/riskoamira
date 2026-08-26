@@ -1037,7 +1037,18 @@ function SettingsPanel({
           <NumRow label="Border Width" value={style.borderWidth} onChange={(v) => patchStyle({ borderWidth: v })} />
           <ColorRow label="Border Color" value={style.borderColor ?? "#000000"} onChange={(v) => patchStyle({ borderColor: v })} />
           <SelectRow label="Shadow" value={style.shadow ?? "none"} options={["none", "sm", "md", "lg", "xl"]} onChange={(v) => patchStyle({ shadow: v as never })} />
-          <NumRow label="Opacity (0-1)" value={style.opacity} step={0.1} onChange={(v) => patchStyle({ opacity: v })} />
+          <label className="block text-[11px]">
+            Opacity ({Math.round((style.opacity ?? 1) * 100)}%)
+            <input
+              className="w-full"
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={style.opacity ?? 1}
+              onChange={(e) => patchStyle({ opacity: Number(e.target.value) })}
+            />
+          </label>
           <NumRow label="Rotate (deg)" value={style.rotate} onChange={(v) => patchStyle({ rotate: v })} />
           <NumRow label="Z-Index" value={style.zIndex} onChange={(v) => patchStyle({ zIndex: v })} />
           {selection.kind === "field" && (
